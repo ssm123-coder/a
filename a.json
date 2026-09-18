@@ -469,7 +469,7 @@
                 "https://danmu.lily.lat/lilyemby|公益源6",
                 "https://danmu.longemby.com/lilyemby|公益源7" 
             ],
-                "titleMappingsUrl": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/yins.json",
+                "titleMappingsUrl": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/yins.json"
                 //"filter": "./lib/douban.json"}
         }
     ],
