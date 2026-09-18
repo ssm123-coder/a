@@ -3,25 +3,6 @@
     "wallpaper": "http://fmys.top/img.php",
     "sites": [
         {
-             "key": "弹幕",
-            "name": "小白｜弹幕",
-            "type": 3,
-            "api": "csp_SecureDanmu", 
-            "jar": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar", 
-            "ext": { 
-                "apiUrls": [
-                "https://danmu.iyo.us.ci/theft-dastardly-prognosis-hula-agenda2-dropkick|公益源1",
-                "https://logo.saodu.work:8888/87654321|公益源2", 
-                "https://dm.ljiaovm.com/luosen|公益源3", 
-                "https://logdanmu.kongcheng666.dpdns.org/a123456|公益源4",
-                "https://api.dandanplay.net|公益源5",
-                "https://danmu.lily.lat/lilyemby|公益源6",
-                "https://danmu.longemby.com/lilyemby|公益源7" 
-            ],
-                "titleMappingsUrl": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/yins.json",
-                "filter": "./lib/douban.json"}
-        },
-        {
             "key": "fy_py",
             "name": "枫叶｜4 K",
             "type": 3,
@@ -465,6 +446,25 @@
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/juese.py",
             "searchable": 0,
             "changeable": 0
+        },
+        {
+             "key": "弹幕",
+            "name": "小白｜弹幕",
+            "type": 3,
+            "api": "csp_SecureDanmu", 
+            "jar": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar", 
+            "ext": { 
+                "apiUrls": [
+                "https://danmu.iyo.us.ci/theft-dastardly-prognosis-hula-agenda2-dropkick|公益源1",
+                "https://logo.saodu.work:8888/87654321|公益源2", 
+                "https://dm.ljiaovm.com/luosen|公益源3", 
+                "https://logdanmu.kongcheng666.dpdns.org/a123456|公益源4",
+                "https://api.dandanplay.net|公益源5",
+                "https://danmu.lily.lat/lilyemby|公益源6",
+                "https://danmu.longemby.com/lilyemby|公益源7" 
+            ],
+                "titleMappingsUrl": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/yins.json",
+                //"filter": "./lib/douban.json"}
         }
     ],
     "lives": [
