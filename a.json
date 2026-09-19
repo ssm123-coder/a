@@ -7,6 +7,10 @@
             "name": "枫叶｜4 K",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/fengye.py"
+            "searchable": 1,
+            "filterable": 0,
+            "changeable": 1,
+            "playerType": 2
         },
         {
             "key": "kkys_py",
