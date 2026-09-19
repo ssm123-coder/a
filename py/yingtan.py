@@ -17,7 +17,7 @@ class Spider(Spider):
         'cmskey': 'wP5bvxoc3yv7FoBQENFZuAF0EUYr4LTy',
         'RawPlayUrl': 0,
         # ldmax 内置解析接口
-        'parse_api': 'http://125.208.22.184:6019/api/index?parsesId=550266&appid=10000&videoUrl='
+        'parse_api': 'https://niubi.69mini.com/api/?key=de8570d02b2e5181978a6c47a8eb4d91&url='
     }
     WEB_PARSES = [
         'http://yecao.icu/api/index?parsesId=3&appid=10000&videoUrl=',
