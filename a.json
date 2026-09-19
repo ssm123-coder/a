@@ -3,28 +3,6 @@
     "wallpaper": "http://fmys.top/img.php",
     "sites": [
         {
-            "key": "fy_py",
-            "name": "枫叶｜4 K",
-            "type": 3,
-            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/fengye.py",
-            "searchable": 1,
-            "filterable": 0,
-            "changeable": 1,
-            "playerType": 2
-        },
-        {
-           "key": "CO_CMS",
-           "name": "咖啡｜4 K",
-           "type": 4,
-           "api": "http://8.134.205.252:39466/pz/co4k.php/api.php/provide/vod/?ac=list"
-        },
-        {
-            "key": "kkys_py",
-            "name": "可可｜4 K",
-            "type": 3,
-            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/kkys.py"
-        },
-        {
             "key": "wanou_sites",
             "name": "凯胜｜网盘",
             "type": 4,
@@ -37,62 +15,56 @@
             }
         },
         {
-            "key": "4Kys_py",
-            "name": "影视｜4 K",
-            "type": 3,
-            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/4kys.py"
-        },
-        {
             "key": "yt_py",
-            "name": "影探｜4 K",
+            "name": "影探｜影视",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/yingtan.py"
         },
         {
             "key": "gulu_py",
-            "name": "咕噜｜4 K",
+            "name": "咕噜｜影视",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/gulu.py"
         },
         {
             "key": "xy_py",
-            "name": "星影｜4 K",
+            "name": "星影｜影视",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/xingying.py"
         },
         {
             "key": "jz_py",
-            "name": "橘汁｜4 K",
+            "name": "橘汁｜影视",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/jizhi.py"
         },
         {
             "key": "bb_pyY",
-            "name": "布布｜4 K",
+            "name": "布布｜影视",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/bubu.py"
         },
         {
             "key": "jxf_py",
-            "name": "下饭｜4 K",
+            "name": "下饭｜影视",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/juxiafan.py"
         },
         {
             "key": "zbc_py",
-            "name": "不戳｜4 K",
+            "name": "不戳｜影视",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/zhenbucuo.py"
         },
         {
             "key": "dd_py",
-            "name": "多多｜4 K",
+            "name": "多多｜影视",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/duoduo.py"
         },
         {
             "key": "xcm_cms",
-            "name": "熊大｜4 K",
+            "name": "熊大｜影视",
             "type": 4,
             "api": "http://sy.xuntuyun.cn:20394/ctyx.php/api.php/provide/vod/?ac=list"
         },
@@ -298,6 +270,12 @@
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/xueluo.py"
         },
         {
+            "key": "GZYS",
+            "name": "瓜子｜蓝光",
+            "type": 3,
+            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/guazi.py"
+        },
+        {
             "key": "HSYS",
             "name": "华数｜蓝光",
             "type": 3,
@@ -337,12 +315,6 @@
             "searchable": 1,
             "quickSearch": 1,
             "filterable": 0
-        },
-        {
-            "key": "XFDJ",
-            "name": "喜福｜短剧",
-            "type": 3,
-            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/xifu.py"
         },
         {
             "key": "KwMusic",
@@ -547,21 +519,6 @@
                     "1905"
                 ]
             }
-        },
-        {
-            "name": "nnxv",
-            "type": 0,
-            "url": "https://jx.nnxv.cn/tv.php?url="
-        },   
-        {
-            "name": "m3u8",
-            "type": 0,
-            "url": "https://jx.m3u8.tv/jiexi/?url="
-        },
-        {
-            "name": "虾米",
-            "type": 0,
-            "url": "https://jx.xmflv.com/?url="
         },
         {
             "name": "XK",
