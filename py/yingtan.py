@@ -22,6 +22,8 @@ class Spider(Spider):
     WEB_PARSES = [
         'http://yecao.icu/api/index?parsesId=3&appid=10000&videoUrl=',
         'http://61.184.23.217:6163/api/index?parsesId=4&appid=10001&videoUrl=',
+        'http://zhuyun.shanhaiguanwu.top/api/index?parsesId=1&appid=10000&videoUrl=',
+        'http://lieyuyunui6.qijiyun.vip//api/index?parsesId=2&appid=10006&videoUrl=',
     ]
 
     def init(self, extend=''):
