@@ -69,15 +69,6 @@
             "api": "http://sy.xuntuyun.cn:20394/ctyx.php/api.php/provide/vod/?ac=list"
         },
         {
-            "key": "PKJS",
-            "name": "片库｜影视",
-            "type": 3,
-            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/pianku.js",
-            "searchable": 1,
-            "quickSearch": 1,
-            "filterable": 0
-        },
-        {
             "key": "wouo_wp",
             "name": "玩偶｜网盘",
             "type": 3,
