@@ -13,13 +13,10 @@
             "playerType": 2
         },
         {
-            "key": "BY_CMS",
-            "name": "不夜｜4 K",
-            "type": 1,
-            "api": "https://dy.7772888.xyz/api.php/tvbox",
-            "searchable": 1,
-            "quickSearch": 1,
-            "filterable": 1
+           "key": "CO_CMS",
+           "name": "咖啡｜4 K",
+           "type": 4,
+           "api": "http://8.134.205.252:39466/pz/co4k.php/api.php/provide/vod/?ac=list"
         },
         {
             "key": "kkys_py",
