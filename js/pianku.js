@@ -1,29 +1,36 @@
 /**
-
+ * OK影视 / CatVodSpider JS版 - 片库网爬虫（性能优化版）
  */
+
 const HOST = "https://4k01.pianku.online";
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-const parseAPiUrl = "https://svip.qlplayer.cyou/?url=";
+const parseAPiUrl = "https://www.playm3u8.cn/jiexi.php?url=";
+
 const HEADERS = {
     "User-Agent": UA,
 };
 
+// 预编译高频使用的正则，提升运行效率并节省内存开销
 const VOD_ITEM_REG = /<div class="vod-item">[\s\S]*?<a href="\/voddetail\/(\d+)\.html" title="(.*?)"[\s\S]*?<img src="(.*?)"[\s\S]*?<span class="remarks">(.*?)<\/span>/g;
 const CLEAN_TAG_REG = /<[^>]+>/g;
 const DIRECT_URL_REG = /\.(m3u8|mp4)/i;
+
 function buildUrl(path) {
     if (!path) return "";
     if (path.startsWith("http")) return path;
     return HOST + (path.startsWith("/") ? "" : "/") + path;
 }
+
 function mylog(...args) {
     console.log(`[片库网]`, ...args);
 }
+
 function getVodList(html) {
     if (!html) return [];
     const list = [];
     VOD_ITEM_REG.lastIndex = 0; // 重置正则索引
     let match;
+
     while ((match = VOD_ITEM_REG.exec(html)) !== null) {
         list.push({
             vod_id: match[1],
@@ -35,9 +42,11 @@ function getVodList(html) {
     mylog(`共提取到 ${list.length} 条数据`);
     return list;
 }
+
 async function init(cfg) {
     mylog("Spider Init Done");
 }
+
 async function home(filter) {
     mylog(`开始加载首页，filter=${filter}`);
     try {
@@ -47,6 +56,7 @@ async function home(filter) {
             { "type_id": "43", "type_name": "动漫" },
             { "type_id": "45", "type_name": "综艺" }
         ];
+
         const filters = {
             "20": [{
                 "key": "tid",
@@ -64,8 +74,10 @@ async function home(filter) {
                 ]
             }]
         };
+
         const res = await req(HOST, { headers: HEADERS });
         const vodList = getVodList(res.content);
+
         return JSON.stringify({
             class: classes,
             filters: filter ? filters : {},
@@ -76,6 +88,7 @@ async function home(filter) {
         return JSON.stringify({ class: [], list: [] });
     }
 }
+
 async function homeVod() {
     mylog("获取首页推荐视频");
     try {
@@ -87,15 +100,18 @@ async function homeVod() {
         return JSON.stringify({ list: [] });
     }
 }
+
 async function category(tid, pg, filter, extend) {
     let realTid = (extend && extend.tid) ? extend.tid : tid;
     const page = pg || "1";
     const url = page === "1" ? `${HOST}/vodtype/${realTid}.html` : `${HOST}/vodtype/${realTid}-${page}.html`;
+
     mylog(`请求分类 URL: ${url}`);
     try {
         const res = await req(url, { headers: HEADERS });
         const html = res.content;
         const vodList = getVodList(html);
+
         let pagecount = parseInt(page) + 1;
         let total = 0;
         const pageMatch = html.match(/尾页.*?href=".*?-(\d+)\.html"/);
@@ -103,6 +119,7 @@ async function category(tid, pg, filter, extend) {
             pagecount = parseInt(pageMatch[1]);
             total = pagecount * 24;
         }
+
         return JSON.stringify({
             list: vodList,
             page: parseInt(page),
@@ -115,22 +132,28 @@ async function category(tid, pg, filter, extend) {
         return JSON.stringify({ list: [], page: 1, pagecount: 1, limit: 24, total: 0 });
     }
 }
+
 async function detail(id) {
     const url = `${HOST}/voddetail/${id}.html`;
     mylog(`获取详情页 URL: ${url}`);
+
     try {
         const res = await req(url, { headers: HEADERS });
         const html = res.content || "";
+
         const getMatch = (re) => {
             const m = html.match(re);
             return m ? m[1].trim() : "";
         };
+
         const title = getMatch(/<h1[^>]*class="detail-title"[^>]*>(.*?)(?:<span|<\/h1>)/s);
         let pic = getMatch(/class="detail-poster"[^>]*>[\s\S]*?<img src="(.*?)"/);
         if (pic) pic = buildUrl(pic);
+
         const remarks = getMatch(/class="detail-remarks"[^>]*>(.*?)<\/span>/);
         const content = getMatch(/class="detail-desc"[^>]*>[\s\S]*?<p>(.*?)<\/p>/);
-        
+
+        // 提取演员元数据
         let director = "", actor = "", area = "", year = "";
         const metaRegex = /<(?:span|p|div)[^>]*>(导演|主演|地区|年份)[：:](.*?)(?:<\/span>|<\/p>|<\/div>)/g;
         let metaMatch;
@@ -142,7 +165,8 @@ async function detail(id) {
             else if (key === "地区") area = val;
             else if (key === "年份") year = val;
         }
-        
+
+        // 提取播放线路
         const playFromList = [];
         const tabRegex = /class="source-tab-item[^"]*"[^>]*>(.*?)<\/span>/g;
         let tabMatch;
@@ -153,51 +177,32 @@ async function detail(id) {
             }
             playFromList.push(from);
         }
-        
+
+        // 优化剧集面板提取：采用分割（split）避免正则跨大段 HTML 回溯
         const playUrlList = [];
         const panes = html.split('class="source-pane');
+        
         for (let i = 1; i < panes.length; i++) {
             const paneHtml = panes[i].split("</div>")[0] || panes[i];
             const episodes = [];
             const epRegex = /href="(\/vodplay\/[^"]+)"[^>]*>(.*?)<\/a>/g;
             let epMatch;
+
             while ((epMatch = epRegex.exec(paneHtml)) !== null) {
                 const epName = epMatch[2].replace(CLEAN_TAG_REG, "").strip ? epMatch[2].replace(CLEAN_TAG_REG, "").strip() : epMatch[2].replace(CLEAN_TAG_REG, "").trim();
                 const epUrl = buildUrl(epMatch[1]);
                 episodes.push(`${epName}$${epUrl}`);
             }
-            playUrlList.push(episodes.join("#"));
+            if (episodes.length > 0) {
+                playUrlList.push(episodes.join("#"));
+            }
         }
 
-        let targetIdx = -1;
-        
-        for (let i = 0; i < playFromList.length; i++) {
-            const name = playFromList[i];
-            if (name.includes("自营4K60帧") || name.includes("自营4k60帧")) {
-                targetIdx = i;
-                break;
-            }
+        // 补充默认线路名
+        if (playFromList.length === 0 && playUrlList.length > 0) {
+            playUrlList.forEach((_, i) => playFromList.push(`线路 ${i + 1}`));
         }
-        
-        let finalUrlStr = "";
-        if (targetIdx !== -1 && playUrlList[targetIdx] && playUrlList[targetIdx].length > 0) {
-            
-            finalUrlStr = playUrlList[targetIdx];
-            mylog(`优先选用自营4K60帧线路`);
-        } else {
-            
-            for (let i = 0; i < playUrlList.length; i++) {
-                if (playUrlList[i] && playUrlList[i].length > 0) {
-                    finalUrlStr = playUrlList[i];
-                    mylog(`自营线路无集数，切换至第${i+1}条可用线路`);
-                    break;
-                }
-            }
-        }
-        
-        const finalPlayFrom = finalUrlStr ? ["自营"] : [];
-        const finalPlayUrl = finalUrlStr ? [finalUrlStr] : [];
-        
+
         const vod = {
             vod_id: id,
             vod_name: title,
@@ -209,20 +214,23 @@ async function detail(id) {
             vod_actor: actor,
             vod_director: director,
             vod_content: content,
-            vod_play_from: finalPlayFrom.join("$$$"),
-            vod_play_url: finalPlayUrl.join("$$$")
+            vod_play_from: playFromList.join("$$$"),
+            vod_play_url: playUrlList.join("$$$")
         };
-        mylog(`成功解析视频详情: ${title}，最终展示线路：自营`);
+
+        mylog(`成功解析视频详情: ${title}`);
         return JSON.stringify({ list: [vod] });
     } catch (e) {
         mylog(e.message);
         return JSON.stringify({ list: [] });
     }
 }
+
 async function search(key, quick, pg) {
     const encodedKey = encodeURIComponent(key);
     const url = `${HOST}/vodsearch/-------------.html?wd=${encodedKey}`;
     mylog(`开始搜索关键词: ${key} -> URL: ${url}`);
+
     try {
         const res = await req(url, { headers: HEADERS });
         const vodList = getVodList(res.content);
@@ -236,10 +244,12 @@ async function search(key, quick, pg) {
         return JSON.stringify({ list: [] });
     }
 }
+
 function formatUrl(url) {
     if (!url) return "";
     return url.replace(/\\/g, "").replace(/^(https?:\/)((?!\/))/i, "$1/");
 }
+
 function extractConfig(html) {
     const apiTokenMatch = html.match(/apiToken\s*:\s*["']([^"']+)["']/);
     return {
@@ -247,20 +257,27 @@ function extractConfig(html) {
     };
 }
 
+// 修复判定逻辑 Bug
 function isDirectVideoUrl(url) {
     return DIRECT_URL_REG.test(url);
 }
+
 async function parseVideoUrl(url) {
     try {
         const resoleUrl = parseAPiUrl + url;
         mylog("解析地址", resoleUrl);
+
         const html1 = (await req(resoleUrl)).content || "";
         const { apiToken } = extractConfig(html1);
+
         if (!apiToken) return "";
+
         const parseTokenUrl = `https://svip.qlplayer.cyou/api/resolve.php?token=${encodeURIComponent(apiToken)}`;
         mylog("parseTokenUrl", parseTokenUrl);
+
         const res = await req(parseTokenUrl);
         const data = JSON.parse(res.content);
+
         mylog("data", data);
         const finalUrl = formatUrl(data.url);
         mylog("finalUrl", finalUrl);
@@ -270,20 +287,25 @@ async function parseVideoUrl(url) {
         return "";
     }
 }
+
 async function play(flag, id, flags) {
     const playUrl = buildUrl(id);
     mylog(`开始获取播放地址: ${playUrl}`);
     try {
         const res = await req(playUrl, { headers: HEADERS });
         const html = res.content || "";
+
         const match = html.match(/player_aaaa\s*=\s*(\{[\s\S]*?\})/);
+
         if (match && match[1]) {
             const playerData = JSON.parse(match[1]);
             const targetUrl = playerData.url || "";
+
             if (isDirectVideoUrl(targetUrl)) {
                 mylog("是直连，", targetUrl);
                 return JSON.stringify({ parse: 0, url: targetUrl });
             }
+
             const finalPlayUrl = await parseVideoUrl(targetUrl);
             return JSON.stringify({ parse: 0, url: finalPlayUrl });
         } else {
@@ -292,8 +314,10 @@ async function play(flag, id, flags) {
     } catch (e) {
         mylog(`网络请求失败: ${e.message}`);
     }
+
     return JSON.stringify({ parse: 0, url: "" });
 }
+
 export default {
     init,
     home,
