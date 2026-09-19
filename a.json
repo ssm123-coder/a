@@ -323,6 +323,12 @@
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/kwmusic.py"
         },
         {
+            "key": "ytb_py",
+            "name": "悦听｜听书",
+            "type": 3,
+            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/ytbts.py"
+        },
+        {
            "key":"QingTingFM",
            "name":"蜻蜓｜广播",
            "type":3,
