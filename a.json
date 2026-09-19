@@ -317,6 +317,15 @@
             "filterable": 0
         },
         {
+            "key": "JHDJ",
+            "name": "聚合｜短剧",
+            "type": 3,
+            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/jhdj.js",
+            "searchable": 1,
+            "quickSearch": 1,
+            "filterable": 0
+        },
+        {
             "key": "KwMusic",
             "name": "酷我｜音乐",
             "type": 3,
