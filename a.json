@@ -510,6 +510,13 @@
             "playerType": 2
         },
         {
+            "name": "恒轩源",
+            "type": 0,
+            "url": "https://gitee.com/t-v/tt/raw/t/t/k.png",
+            "timeout": 10,
+            "logo": "https://tb.zbds.top/logo/{name}.png"
+        },
+        {
             "name": "JackTV{翻}",
             "type": 0,
             "url": "https://php.946985.filegear-sg.me/jackTV.m3u",
