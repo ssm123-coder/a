@@ -39,6 +39,22 @@
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/jizhi.py"
         },
         {
+            "key": "yunduo",
+            "name": "❤主03┃3840",
+            "type": 3,
+            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/yunduo.js",
+            "ext": {
+                "host": "https://duoduotv.top",
+                "pkg": "com.sunshine.tv",
+                "sk": "SK-thanks",
+                "finger": "SF-C3B2B41F6EFFFF9869176CF68F6790E8F07506FC88632C94B4F5F0430D5498CA",
+                "ver": "7",
+                "updateId": "01a00b72-a18d-77ac-9921-9dbe96573441",
+                "deviceBrand": "vivo",
+                "deviceModel": "V2309A"
+            }
+        },
+        {
             "key": "bb_pyY",
             "name": "布布｜影视",
             "type": 3,
