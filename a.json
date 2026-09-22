@@ -202,38 +202,6 @@
             }
         },
         {
-            "key": "uoge_jx",
-            "name": "讴歌｜解析",
-            "type": 3,
-            "jar": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/jar/PsyDuck-wp.jar",
-            "api": "csp_ZC4K",
-            "ext": "YUhSMGNEb3ZMekUyTUM0eU1ESXVNak00TGpNNU9qTTNNekU1TDJGd2FTNXdhSEEvYzJsMFpUMXZkV2RsSXlNamIzVm5aUT09"
-        },
-        {
-            "key": "muuo_jx",
-            "name": "木偶｜解析",
-            "type": 3,
-            "jar": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/jar/PsyDuck-wp.jar",
-            "api": "csp_ZC4K",
-            "ext": "YUhSMGNEb3ZMekUyTUM0eU1ESXVNak00TGpNNU9qTTNNekU1TDJGd2FTNXdhSEEvYzJsMFpUMXRiMmRuSXlNamJXOW5adz09"
-        },
-        {
-            "key": "wanuo_jx",
-            "name": "玩偶｜解析",
-            "type": 3,
-            "jar": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/jar/PsyDuck-wp.jar",
-            "api": "csp_ZC4K",
-            "ext": "YUhSMGNEb3ZMekUyTUM0eU1ESXVNak00TGpNNU9qTTNNekU1TDJGd2FTNXdhSEEvYzJsMFpUMTNiMmRuSXlNamQyOW5adz09"
-        },
-        {
-            "key": "hb_jx",
-            "name": "虎斑｜解析",
-            "type": 3,
-            "jar": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/jar/PsyDuck-wp.jar",
-            "api": "csp_ZC4K",
-            "ext": "YUhSMGNEb3ZMekUyTUM0eU1ESXVNak00TGpNNU9qTTNNekU1TDJGd2FTNXdhSEEvYzJsMFpUMW9kV0poYmlNakkyaDFZbUZ1"
-        },
-        {
             "key": "tx_jx",
             "name": "腾讯｜官方",
             "type": 3,
@@ -572,7 +540,7 @@
             }
         },
         {
-            "name": "XK",
+            "name": "cK",
             "type": 0,
             "url": "https://www.ckplayer.vip/jiexi/?url="
         },
@@ -595,28 +563,6 @@
             "name": "土豆",
             "type": 0,
             "url": "https://test1.12321app.com/daoliansiquanjia.php?url="
-        },
-        {
-            "name": "网盘解析",
-            "type": 1,
-            "url": "http://8.134.205.252:39466/ceshi/ss.php?key=ysj&url=",
-            "ext": {
-                "flag": [
-                    "baidu",
-                    "baidu2",
-                    "abaidu",
-                    "a123",
-                    "a189",
-                    "a115",
-                    "ali",
-                    "臻彩",
-                    "臻彩2",
-                    "原彩",
-                    "真彩",
-                    "清秋",
-                    "明月"
-                ]
-            }
         },
         {
             "name": "牛马",
