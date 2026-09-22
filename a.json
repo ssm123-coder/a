@@ -2,9 +2,28 @@
 {
     "spider": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar",
     "wallpaper": "http://fmys.top/img.php",
+    "logo": "https://pic.nximg.cn/file/20250530/35182407_094206711109_2.jpg",
     "warningText": "欢迎使用，祝您观影愉快，只提供学习之用，下载后24小时后删除",
-    "notice": "9月22日更新,瘦瘦马提示:软件和接口完全免费,请勿上当购买,⚠️勿信插播及字幕广告⚠️",
+    "notice": "9月23日更新,瘦瘦马提示:软件和接口完全免费,请勿上当购买,⚠️勿信插播及字幕广告⚠️",
     "sites": [
+        {
+             "key": "小白弹幕",
+            "name": "⚠️勿信插播及字幕广告⚠️",
+            "type": 3,
+            "api": "csp_SecureDanmu", 
+            "jar": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar", 
+            "ext": { 
+                "apiUrls": [
+                "https://danmu.iyo.us.ci/theft-dastardly-prognosis-hula-agenda2-dropkick|公益源1",
+                "https://dm.ljiaovm.com/luosen|公益源2", 
+                "https://logdanmu.kongcheng666.dpdns.org/a123456|公益源3",
+                "https://api.dandanplay.net|公益源4",
+                "https://danmu.lily.lat/lilyemby|公益源5",
+                "https://danmu.longemby.com/lilyemby|公益源6" 
+            ],
+                "titleMappingsUrl": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/yins.json"
+            }
+        },
         {
             "key": "wanou_sites",
             "name": "网盘｜推荐",
@@ -473,24 +492,6 @@
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/juese.py",
             "searchable": 0,
             "changeable": 0
-        },
-        {
-             "key": "小白弹幕",
-            "name": "⚠️勿信插播及字幕广告⚠️",
-            "type": 3,
-            "api": "csp_SecureDanmu", 
-            "jar": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar", 
-            "ext": { 
-                "apiUrls": [
-                "https://danmu.iyo.us.ci/theft-dastardly-prognosis-hula-agenda2-dropkick|公益源1",
-                "https://dm.ljiaovm.com/luosen|公益源2", 
-                "https://logdanmu.kongcheng666.dpdns.org/a123456|公益源3",
-                "https://api.dandanplay.net|公益源4",
-                "https://danmu.lily.lat/lilyemby|公益源5",
-                "https://danmu.longemby.com/lilyemby|公益源6" 
-            ],
-                "titleMappingsUrl": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/yins.json"
-            }
         }
     ],
     "lives": [
