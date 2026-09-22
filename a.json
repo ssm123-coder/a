@@ -6,7 +6,7 @@
     "sites": [
         {
             "key": "wanou_sites",
-            "name": "凯胜｜网盘",
+            "name": "网盘｜推荐",
             "type": 4,
             "api": "http://103.236.77.248:36245/video/wanou_sites",
             "searchable": 1,
@@ -18,37 +18,37 @@
         },
         {
             "key": "yt_py",
-            "name": "影探｜影视",
+            "name": "影探｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/yingtan.py"
         },
         {
             "key": "gulu_py",
-            "name": "咕噜｜影视",
+            "name": "咕噜｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/gulu.py"
         },
         {
             "key": "symx_py",
-            "name": "木兮｜影视",
+            "name": "木兮｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/symx.py"
         },
         {
             "key": "xy_py",
-            "name": "星影｜影视",
+            "name": "星影｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/xingying.py"
         },
         {
             "key": "jz_py",
-            "name": "橘汁｜影视",
+            "name": "橘汁｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/jizhi.py"
         },
         {
             "key": "yunduo_js",
-            "name": "云朵｜影视",
+            "name": "云朵｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/yunduo.js",
             "ext": {
@@ -64,31 +64,31 @@
         },
         {
             "key": "bb_pyY",
-            "name": "布布｜影视",
+            "name": "布布｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/bubu.py"
         },
         {
             "key": "jxf_py",
-            "name": "下饭｜影视",
+            "name": "下饭｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/juxiafan.py"
         },
         {
             "key": "zbc_py",
-            "name": "不戳｜影视",
+            "name": "不戳｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/zhenbucuo.py"
         },
         {
             "key": "dd_py",
-            "name": "多多｜影视",
+            "name": "多多｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/duoduo.py"
         },
         {
             "key": "xcm_cms",
-            "name": "熊大｜影视",
+            "name": "熊大｜推荐",
             "type": 4,
             "api": "http://sy.xuntuyun.cn:20394/ctyx.php/api.php/provide/vod/?ac=list"
         },
@@ -215,28 +215,28 @@
         },
         {
             "key": "TXJX",
-            "name": "腾讯｜解析",
+            "name": "腾讯｜视频",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/txjx.js"
         },
         {
            "key":"MGJX",
-           "name":"芒果｜解析",
+           "name":"芒果｜视频",
            "type":3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/mgjx.js"
         },
         {
            "key":"AQYJX",
-           "name":"爱奇艺｜解析",
+           "name":"爱奇艺｜视频",
            "type":3,
              "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/aiqiyi.js"
         },
         {
            "key":"YKJX",
-           "name":"优酷｜解析",
+           "name":"优酷｜视频",
            "type":3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/ykjx.js"
