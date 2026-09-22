@@ -2,6 +2,7 @@
 {
     "spider": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar",
     "wallpaper": "http://fmys.top/img.php",
+    "warningText": "欢迎使用，祝您观影愉快，只提供学习之用，下载后24小时后删除",
     "notice": "9月22日更新,瘦瘦马提示:软件和接口完全免费,请勿上当购买",
     "sites": [
         {
