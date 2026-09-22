@@ -3,7 +3,7 @@
     "spider": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar",
     "wallpaper": "http://fmys.top/img.php",
     "warningText": "欢迎使用，祝您观影愉快，只提供学习之用，下载后24小时后删除",
-    "notice": "9月22日更新,瘦瘦马提示:软件和接口完全免费,请勿上当购买",
+    "notice": "9月22日更新,瘦瘦马提示:软件和接口完全免费,请勿上当购买,⚠️勿信观影广告⚠️",
     "sites": [
         {
             "key": "wanou_sites",
@@ -216,35 +216,35 @@
         },
         {
             "key": "tx_jx",
-            "name": "腾讯｜视频",
+            "name": "腾讯｜官方",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/txjx.js"
         },
         {
            "key":"mg_jx",
-           "name":"芒果｜视频",
+           "name":"芒果｜官方",
            "type":3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/mgjx.js"
         },
         {
            "key":"aqy_jx",
-           "name":"爱奇艺｜视频",
+           "name":"爱奇艺｜官方",
            "type":3,
              "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/aiqiyi.js"
         },
         {
            "key":"yk_jx",
-           "name":"优酷｜视频",
+           "name":"优酷｜官方",
            "type":3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/ykjx.js"
         },
         {
             "key": "bl_sp",
-            "name": "哔哩｜视频",
+            "name": "哔哩｜官方",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/bilibili.py"
         },
@@ -475,8 +475,8 @@
             "changeable": 0
         },
         {
-             "key": "弹幕",
-            "name": "小白｜弹幕",
+             "key": "小白弹幕",
+            "name": "⚠️勿信观影广告⚠️",
             "type": 3,
             "api": "csp_SecureDanmu", 
             "jar": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar", 
