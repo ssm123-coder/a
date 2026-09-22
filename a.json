@@ -235,11 +235,10 @@
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/ykjx.js"
         },
         {
-            "key": "BLJX",
-            "name": "哔哩｜解析",
+            "key": "BLSP",
+            "name": "哔哩｜视频",
             "type": 3,
-            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
-            "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/bilibili.js"
+            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/bili.py"
         },
         {
             "key": "yd_yp",
