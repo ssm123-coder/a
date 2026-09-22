@@ -29,6 +29,12 @@
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/gulu.py"
         },
         {
+            "key": "symx_py",
+            "name": "木兮｜影视",
+            "type": 3,
+            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/symx.py"
+        },
+        {
             "key": "xy_py",
             "name": "星影｜影视",
             "type": 3,
