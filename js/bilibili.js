@@ -1,21 +1,20 @@
-
 var rule = {
-    title:'哔哩影视[官]',
+    title:'bili',
     host:'https://api.bilibili.com',
     url:'/fyclass-fypage&vmid=$vmid',
     detailUrl:'/pgc/view/web/season?season_id=fyid',
     filter_url:'fl={{fl}}',
     vmid获取教程:'登录后访问https://api.bilibili.com/x/web-interface/nav,搜索mid就是,cookie需要 bili_jct,DedeUserID,SESSDATA参数',
-    searchUrl:'/x/web-interface/search/type?keyword=**&page=fypage&search_type=media_bangumi&search_type=media_ft',
+    searchUrl:'/x/web-interface/search/type?keyword=**&page=fypage&search_type=',
     searchable:1,
     filterable:1,
     quickSearch:0,
     headers:{
         'User-Agent':'PC_UA',
         "Referer": "https://www.bilibili.com",
-        "Cookie":""
+         "Cookie": "DedeUserID=3494349660752443; DedeUserID__ckMd5=74d3f68f652c20c5; SESSDATA=ed91686f,1799832204,ad34a*72CjDPtz5qmaZnTTuGE0qJ6rfSRCx3LbbYcjrwpRQbGHGSU9jS4BjIjVvrbN9J_2e5UaUSVkIwM3lGbmJIVWNvNDZ0cUpLMXhBaWlXeTVfOHFpeDlreDNOc3dadHZ3NnZBUkU3Sl92bU9XLVA0ZjZ0ekd6U3N6N2ZIaEp1cWVOUGRmeHppWGVySFVnIIEC; bili_jct=83142548b194c9db766c8d900f8394a1;"
     },
-    tab_order:['bilibili'],//线路顺序,按里面的顺序优先，没写的依次排后面
+    tab_order:['恒轩'],
     timeout:5000,
     class_name:'番剧&国创&电影&电视剧&纪录片&综艺&全部&追番&追剧&时间表',
     class_url:'1&4&2&5&3&7&全部&追番&追剧&时间表',
@@ -23,45 +22,12 @@ var rule = {
     play_parse:true,
     // play_json:[{re:'*', json:{jx:1, parse:0,header:JSON.stringify({"user-agent":"PC_UA"})}}],
     pagecount:{"1":1,"2":1,"3":1,"4":1,"5":1,"7":1,"时间表":1},
-     lazy: $js.toString(() => {
-        try {
-            let api = "" + input.split("?")[0];
-            console.log(api);
-            let response = fetch(api, {
-                method: 'get',
-                headers: {
-                    'User-Agent': 'okhttp/3.14.9',
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
-            let bata = JSON.parse(response);
-            if (bata.url.includes("qiyi")) {
-                input = {
-                    parse: 0,
-                    url: bata.url,
-                    jx: 0,
-                    danmaku: "" + input.split("?")[0]
-                };
-            } else {
-                input = {
-                    parse: 0,
-                    url: input.split("?")[0],
-                    jx: 1,
-                    danmaku: "" + input.split("?")[0]
-                };
-            }
-        } catch {
-            input = {
-                parse: 0,
-                url: input.split("?")[0],
-                jx: 1,
-                danmaku: "" + input.split("?")[0]
-            };
-        }
-    }),
+    lazy:'',
     limit:5,
-    推荐:'js:let d=[];function get_result(url){let videos=[];let html=request(url);let jo=JSON.parse(html);if(jo["code"]===0){let vodList=jo.result?jo.result.list:jo.data.list;vodList.forEach(function(vod){let aid=(vod["season_id"]+"").trim();let title=vod["title"].trim();let img=vod["cover"].trim();let remark=vod.new_ep?vod["new_ep"]["index_show"]:vod["index_show"];if(!title.includes("预告")){videos.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark})}})}return videos}function get_rank(tid,pg){return get_result("https://api.bilibili.com/pgc/web/rank/list?season_type="+tid+"&pagesize=20&page="+pg+"&day=3")}function get_rank2(tid,pg){return get_result("https://api.bilibili.com/pgc/season/rank/web/list?season_type="+tid+"&pagesize=20&page="+pg+"&day=3")}function home_video(){let videos=get_rank(1).slice(0,5);[4,2,5,3,7].forEach(function(i){videos=videos.concat(get_rank2(i).slice(0,5))});return videos}VODS=home_video();',
-    一级:'js:let d=[];let vmid=input.split("vmid=")[1].split("&")[0];function get_result(url){let videos=[];let html=request(url);let jo=JSON.parse(html);if(jo["code"]===0){let vodList=jo.result?jo.result.list:jo.data.list;vodList.forEach(function(vod){let aid=(vod["season_id"]+"").trim();let title=vod["title"].trim();let img=vod["cover"].trim();let remark=vod.new_ep?vod["new_ep"]["index_show"]:vod["index_show"];if(!title.includes("预告") && !remark.includes("预告")){videos.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark})}})}return videos}function get_rank(tid,pg){return get_result("https://api.bilibili.com/pgc/web/rank/list?season_type="+tid+"&pagesize=20&page="+pg+"&day=3")}function get_rank2(tid,pg){return get_result("https://api.bilibili.com/pgc/season/rank/web/list?season_type="+tid+"&pagesize=20&page="+pg+"&day=3")}function get_zhui(pg,mode){let url="https://api.bilibili.com/x/space/bangumi/follow/list?type="+mode+"&follow_status=0&pn="+pg+"&ps=10&vmid="+vmid;return get_result(url)}function get_all(tid,pg,order,season_status){let url="https://api.bilibili.com/pgc/season/index/result?order="+order+"&pagesize=20&type=1&season_type="+tid+"&page="+pg+"&season_status="+season_status;return get_result(url)}function get_timeline(tid,pg){let videos=[];let url="https://api.bilibili.com/pgc/web/timeline/v2?season_type="+tid+"&day_before=2&day_after=4";let html=request(url);let jo=JSON.parse(html);if(jo["code"]===0){let videos1=[];let vodList=jo.result.latest;vodList.forEach(function(vod){let aid=(vod["season_id"]+"").trim();let title=vod["title"].trim();let img=vod["cover"].trim();let remark=vod["pub_index"]+"　"+vod["follows"].replace("系列","");if(!title.includes("预告") && !remark.includes("预告")){videos1.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark})}});let videos2=[];for(let i=0;i<7;i++){let vodList=jo["result"]["timeline"][i]["episodes"];vodList.forEach(function(vod){if(vod["published"]+""==="0" && !vod["title"].includes("预告")){let aid=(vod["season_id"]+"").trim();let title=vod["title"].trim();let img=vod["cover"].trim();let date=vod["pub_ts"];let remark=date+"   "+vod["pub_index"];videos2.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark})}})}videos=videos2.concat(videos1)}return videos}function cate_filter(d,cookie){if(MY_CATE==="1"){return get_rank(MY_CATE,MY_PAGE)}else if(["2","3","4","5","7"].includes(MY_CATE)){return get_rank2(MY_CATE,MY_PAGE)}else if(MY_CATE==="全部"){let tid=MY_FL.tid||"1";let order=MY_FL.order||"2";let season_status=MY_FL.season_status||"-1";return get_all(tid,MY_PAGE,order,season_status)}else if(MY_CATE==="追番"){return get_zhui(MY_PAGE,1)}else if(MY_CATE==="追剧"){return get_zhui(MY_PAGE,2)}else if(MY_CATE==="时间表"){let tid=MY_FL.tid||"1";return get_timeline(tid,MY_PAGE)}else{return[]}}VODS=cate_filter();',
+    推荐:'',
+    推荐:'js:let d=[];function get_result(url){let videos=[];let html=request(url);let jo=JSON.parse(html);if(jo["code"]===0){let vodList=jo.result?jo.result.list:jo.data.list;vodList.forEach(function(vod){let aid=(vod["season_id"]+"").trim();let title=vod["title"].trim();let img=vod["cover"].trim();let remark=vod.new_ep?vod["new_ep"]["index_show"]:vod["index_show"];videos.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark})})}return videos}function get_rank(tid,pg){return get_result("https://api.bilibili.com/pgc/web/rank/list?season_type="+tid+"&pagesize=20&page="+pg+"&day=3")}function get_rank2(tid,pg){return get_result("https://api.bilibili.com/pgc/season/rank/web/list?season_type="+tid+"&pagesize=20&page="+pg+"&day=3")}function home_video(){let videos=get_rank(1).slice(0,5);[4,2,5,3,7].forEach(function(i){videos=videos.concat(get_rank2(i).slice(0,5))});return videos}VODS=home_video();',
+    一级:'',
+    一级:'js:let d=[];let vmid=input.split("vmid=")[1].split("&")[0];function get_result(url){let videos=[];let html=request(url);let jo=JSON.parse(html);if(jo["code"]===0){let vodList=jo.result?jo.result.list:jo.data.list;vodList.forEach(function(vod){let aid=(vod["season_id"]+"").trim();let title=vod["title"].trim();let img=vod["cover"].trim();let remark=vod.new_ep?vod["new_ep"]["index_show"]:vod["index_show"];videos.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark})})}return videos}function get_rank(tid,pg){return get_result("https://api.bilibili.com/pgc/web/rank/list?season_type="+tid+"&pagesize=20&page="+pg+"&day=3")}function get_rank2(tid,pg){return get_result("https://api.bilibili.com/pgc/season/rank/web/list?season_type="+tid+"&pagesize=20&page="+pg+"&day=3")}function get_zhui(pg,mode){let url="https://api.bilibili.com/x/space/bangumi/follow/list?type="+mode+"&follow_status=0&pn="+pg+"&ps=10&vmid="+vmid;return get_result(url)}function get_all(tid,pg,order,season_status){let url="https://api.bilibili.com/pgc/season/index/result?order="+order+"&pagesize=20&type=1&season_type="+tid+"&page="+pg+"&season_status="+season_status;return get_result(url)}function get_timeline(tid,pg){let videos=[];let url="https://api.bilibili.com/pgc/web/timeline/v2?season_type="+tid+"&day_before=2&day_after=4";let html=request(url);let jo=JSON.parse(html);if(jo["code"]===0){let videos1=[];let vodList=jo.result.latest;vodList.forEach(function(vod){let aid=(vod["season_id"]+"").trim();let title=vod["title"].trim();let img=vod["cover"].trim();let remark=vod["pub_index"]+"　"+vod["follows"].replace("系列","");videos1.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark})});let videos2=[];for(let i=0;i<7;i++){let vodList=jo["result"]["timeline"][i]["episodes"];vodList.forEach(function(vod){if(vod["published"]+""==="0"){let aid=(vod["season_id"]+"").trim();let title=vod["title"].trim();let img=vod["cover"].trim();let date=vod["pub_ts"];let remark=date+"   "+vod["pub_index"];videos2.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark})}})}videos=videos2.concat(videos1)}return videos}function cate_filter(d,cookie){if(MY_CATE==="1"){return get_rank(MY_CATE,MY_PAGE)}else if(["2","3","4","5","7"].includes(MY_CATE)){return get_rank2(MY_CATE,MY_PAGE)}else if(MY_CATE==="全部"){let tid=MY_FL.tid||"1";let order=MY_FL.order||"2";let season_status=MY_FL.season_status||"-1";return get_all(tid,MY_PAGE,order,season_status)}else if(MY_CATE==="追番"){return get_zhui(MY_PAGE,1)}else if(MY_CATE==="追剧"){return get_zhui(MY_PAGE,2)}else if(MY_CATE==="时间表"){let tid=MY_FL.tid||"1";return get_timeline(tid,MY_PAGE)}else{return[]}}VODS=cate_filter();',
     二级:{
         is_json:true,
         title:".result.title;.result.share_sub_title",
@@ -73,6 +39,100 @@ var rule = {
         list_text:'title',
         list_url:'cid',
     },
-    二级:'js:function zh(num){let p="";if(Number(num)>1e8){p=(num/1e8).toFixed(2)+"亿"}else if(Number(num)>1e4){p=(num/1e4).toFixed(2)+"万"}else{p=num}return p}let html=request(input);let jo=JSON.parse(html).result;let id=jo["season_id"];let title=jo["title"];let pic=jo["cover"];let areas=jo["areas"][0]["name"];let typeName=jo["share_sub_title"];let date=jo["publish"]["pub_time"].substr(0,4);let dec=jo["evaluate"];let remark=jo["new_ep"]["desc"];let stat=jo["stat"];let status="弹幕: "+zh(stat["danmakus"])+"　点赞: "+zh(stat["likes"])+"　投币: "+zh(stat["coins"])+"　追番追剧: "+zh(stat["favorites"]);let score=jo.hasOwnProperty("rating")?"评分: "+jo["rating"]["score"]+"　"+jo["subtitle"]:"暂无评分"+"　"+jo["subtitle"];let vod={vod_id:id,vod_name:title,vod_pic:pic,type_name:typeName,vod_year:date,vod_area:areas,vod_remarks:remark,vod_actor:status,vod_director:score,vod_content:dec};let ja=jo["episodes"].filter(ep=>!ep.title.includes("预告") && !(ep.badge && ep.badge.includes("预告")));let playurls1=[];let playurls2=[];ja.forEach(function(tmpJo){let eid=tmpJo["id"];let cid=tmpJo["cid"];let link=tmpJo["link"];let part=tmpJo["title"].replace("#","-")+" "+tmpJo["long_title"]+"["+tmpJo["badge"]+"]";playurls1.push(part+"$"+eid+"_"+cid);playurls2.push(part+"$"+link)});let playUrl=playurls1.length>0?playurls1.join("#")+"$$$"+playurls2.join("#"):"";vod["vod_play_from"]="$$$bilibili";vod["vod_play_url"]=playUrl;VOD=vod;',
-    搜索:'js:let encodedKeyword = encodeURIComponent(KEY);let url1 = "https://api.bilibili.com/x/web-interface/search/type?search_type=media_bangumi&keyword=" + encodedKeyword + "&page=" + MY_PAGE;let url2 = "https://api.bilibili.com/x/web-interface/search/type?search_type=media_ft&keyword=" + encodedKeyword + "&page=" + MY_PAGE;let html1 = request(url1);let html2 = request(url2);let jo1 = JSON.parse(html1);let jo2 = JSON.parse(html2);let videos = [];function cleanHtml(text) {if (!text) return "";return text.replace(/<[^>]+>/g, "").replace(/&quot;/g, \'"\').replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");}if (jo1["code"] === 0 && jo1["data"]["numResults"] > 0) {let result1 = jo1["data"]["result"];for (let i = 0; i < result1.length; i++) {let vod = result1[i];let aid = (vod["season_id"] + "").trim();let title = cleanHtml(vod["title"]).trim();let img = vod["cover"].trim();let remark = cleanHtml(vod["index_show"]).trim();if (!title.includes("预告") && !remark.includes("预告")) {videos.push({vod_id: aid,vod_name: title,vod_pic: img,vod_remarks: remark});}}}if (jo2["code"] === 0 && jo2["data"]["numResults"] > 0) {let result2 = jo2["data"]["result"];for (let i = 0; i < result2.length; i++) {let vod = result2[i];let aid = (vod["season_id"] + "").trim();let title = cleanHtml(vod["title"]).trim();let img = vod["cover"].trim();let remark = cleanHtml(vod["index_show"]).trim();if (!title.includes("预告") && !remark.includes("预告")) {videos.push({vod_id: aid,vod_name: title,vod_pic: img,vod_remarks: remark});}}}VODS = videos;'
-}
+    二级:'',
+    二级:'js:function zh(num){let p="";if(Number(num)>1e8){p=(num/1e8).toFixed(2)+"亿"}else if(Number(num)>1e4){p=(num/1e4).toFixed(2)+"万"}else{p=num}return p}let html=request(input);let jo=JSON.parse(html).result;let id=jo["season_id"];let title=jo["title"];let pic=jo["cover"];let areas=jo["areas"][0]["name"];let typeName=jo["share_sub_title"];let date=jo["publish"]["pub_time"].substr(0,4);let dec=jo["evaluate"];let remark=jo["new_ep"]["desc"];let stat=jo["stat"];let status="弹幕: "+zh(stat["danmakus"])+"　点赞: "+zh(stat["likes"])+"　投币: "+zh(stat["coins"])+"　追番追剧: "+zh(stat["favorites"]);let score=jo.hasOwnProperty("rating")?"评分: "+jo["rating"]["score"]+"　"+jo["subtitle"]:"暂无评分"+"　"+jo["subtitle"];let vod={vod_id:id,vod_name:title,vod_pic:pic,type_name:typeName,vod_year:date,vod_area:areas,vod_remarks:remark,vod_actor:status,vod_director:score,vod_content:dec};let ja=jo["episodes"];let playurls1=[];let playurls2=[];ja.forEach(function(tmpJo){let eid=tmpJo["id"];let cid=tmpJo["cid"];let link=tmpJo["link"];let part=tmpJo["title"].replace("#","-")+" "+tmpJo["long_title"];playurls1.push(part+"$"+eid+"_"+cid);playurls2.push(part+"$"+link)});let playUrl=playurls1.join("#")+"$$$"+playurls2.join("#");vod["vod_play_from"]=" $$$恒轩";vod["vod_play_url"]=playUrl;VOD=vod;',
+    搜索:'js:let navHtml=request("https://api.bilibili.com/x/web-interface/nav");let navJo=JSON.parse(navHtml);let img_url=navJo.data.wbi_img.img_url;let sub_url=navJo.data.wbi_img.sub_url;let img_key=img_url.substring(img_url.lastIndexOf("/")+1,img_url.lastIndexOf("."));let sub_key=sub_url.substring(sub_url.lastIndexOf("/")+1,sub_url.lastIndexOf("."));let orig=img_key+sub_key;let tab=[46,47,18,2,53,8,23,32,15,50,10,31,58,3,45,35,27,43,5,49,33,9,42,19,29,28,14,39,12,38,41,13,37,48,7,16,24,55,40,61,26,17,0,1,60,51,30,4,22,25,54,21,56,59,6,63,57,62,11,36,20,34,44,52];let mixinKey="";for(let i=0;i<32;i++){mixinKey+=orig.charAt(tab[i]);}let wts=Math.round(Date.now()/1000);let params={keyword:KEY,page:MY_PAGE,page_size:20,platform:"pc",wts:wts};let keys=Object.keys(params).sort();let queryArr=[];for(let i=0;i<keys.length;i++){let v=params[keys[i]].toString().replace(/[!\'()*]/g,"");queryArr.push(encodeURIComponent(keys[i])+"="+encodeURIComponent(v));}let queryStr=queryArr.join("&");let w_rid=md5(queryStr+mixinKey);let url="https://api.bilibili.com/x/web-interface/wbi/search/all/v2?"+queryStr+"&w_rid="+w_rid;let html=request(url);let jo=JSON.parse(html);let videos=[];function cleanHtml(text){if(!text)return"";return text.replace(/<[^>]+>/g,"").replace(/&quot;/g,"\\"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">");}if(jo.code===0&&jo.data&&jo.data.result){let results=jo.data.result;for(let i=0;i<results.length;i++){let category=results[i];if(category.result_type==="media_bangumi"||category.result_type==="media_ft"){let mediaList=category.data;for(let j=0;j<mediaList.length;j++){let vod=mediaList[j];let aid=(vod.season_id+"").trim();let title=cleanHtml(vod.title).trim();let img=(vod.cover||"").trim();let remark=cleanHtml(vod.index_show||"").trim();if(!title.includes("预告")&&!remark.includes("预告")){videos.push({vod_id:aid,vod_name:title,vod_pic:img,vod_remarks:remark});}}}}}VODS=videos;',
+    lazy:'',
+    lazy: `js:
+    
+    const globalHeaders = rule.headers;
+    const commonHeader = {
+        ...globalHeaders,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+        "Accept-Language": "zh-CN,zh;q=0.9"
+    };
+    
+    if (/^http/.test(input)) {
+        let parserUrls = [
+            "https://json.cfysoft.cc/api/?key=db40a4b2f15c4078301a068181bb2724&url=",
+            "http://zxy-th1.jsszks.dpdns.org:8090/?url=",
+            "https://player.gimy.bot/u/parse.php?url=",
+            "https://niubi.69mini.com/api/?key=ce0f08d238a9a94a99635b09c8a6ce31&url="
+        ];
+        let result = {};
+        let playUrl = "";
+        
+        
+        let cidMatch = input.match(/cid=(\d+)/) || input.match(/cid%3D(\d+)/); 
+        let cid = cidMatch ? cidMatch[1] : "";
+        let danmaku = cid ? 'https://api.bilibili.com/x/v1/dm/list.so?oid=' + cid : "";
+        
+        
+        for(let i=0; i<parserUrls.length; i++){
+            try {
+                let parserUrl = parserUrls[i] + encodeURIComponent(input);
+                let html = request(parserUrl, {header: commonHeader}); 
+                let jRoot = JSON.parse(html);
+                playUrl = jRoot["url"] || jRoot["playUrl"] || jRoot["data"];
+                if (playUrl) break;
+            } catch (e) {
+                print("解析接口" + (i+1) + "失败: " + e.message);
+                continue;
+            }
+        }
+        
+        if (playUrl) {
+            result["parse"] = 0;
+            result["url"] = playUrl;
+            result["header"] = commonHeader;
+            result["danmaku"] = danmaku;
+            result["danmakuOpen"] = true; 
+            result["danmakuType"] = "bilibili"; 
+            result["danmakuHeader"] = commonHeader; 
+            input = result;
+        } else {
+            print("所有解析接口均失败：未返回播放地址");
+            input = "";
+        }
+    } 
+    
+    else {
+            let ids = input.split("_");
+            let dan = 'https://api.bilibili.com/x/v1/dm/list.so?oid=' + ids[1];
+            let result = {};
+            let url = "https://api.bilibili.com/pgc/player/web/playurl?qn=116&ep_id=" + ids[0] + "&cid=" + ids[1];
+            let html = request(url, {header: commonHeader});
+            let jRoot = JSON.parse(html);
+            if (jRoot["message"] !== "success") {
+                print("需要大会员权限才能观看");
+                input = ""
+            } else {
+                let jo = jRoot["result"];
+                let ja = jo["durl"];
+                let maxSize = -1;
+                let position = -1;
+                ja.forEach(function(tmpJo, i) {
+                    if (maxSize < Number(tmpJo["size"])) {
+                        maxSize = Number(tmpJo["size"]);
+                        position = i
+                    }
+                });
+                let url = "";
+                if (ja.length > 0) {
+                    position = position === -1 ? 0 : position;
+                    url = ja[position]["url"]
+                }
+                result["parse"] = 0;
+                result["playUrl"] = "";
+                result["url"] = url;
+                result["header"] = commonHeader;
+                result["contentType"] = "video/x-flv";
+                result["danmaku"] = dan;
+                result["danmakuOpen"] = true;
+                result["danmakuType"] = "bilibili";
+                input = result
+            }
+        }
+    `
+};
