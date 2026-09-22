@@ -2,7 +2,6 @@
 {
     "spider": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar",
     "wallpaper": "http://fmys.top/img.php",
-    "warningText": "9月22日更新修复五大平台解析问题，祝您观影愉快,接口免费，收费的都是骗子",
     "sites": [
         {
             "key": "wanou_sites",
