@@ -2,7 +2,7 @@
 {
     "spider": "https://gh-proxy.org/raw.githubusercontent.com/goodcommunication/mydm/main/danmu-spider-native.jar",
     "wallpaper": "http://fmys.top/img.php",
-    "notice": "瘦瘦马提示：软件和接口完全免费，请勿上当购买",
+    "notice": "9月22日更新,瘦瘦马提示:软件和接口完全免费,请勿上当购买",
     "sites": [
         {
             "key": "wanou_sites",
@@ -63,7 +63,7 @@
             }
         },
         {
-            "key": "bb_pyY",
+            "key": "bb_py",
             "name": "布布｜推荐",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/bubu.py"
@@ -214,35 +214,35 @@
             "ext": "YUhSMGNEb3ZMekUyTUM0eU1ESXVNak00TGpNNU9qTTNNekU1TDJGd2FTNXdhSEEvYzJsMFpUMW9kV0poYmlNakkyaDFZbUZ1"
         },
         {
-            "key": "TXJX",
+            "key": "tx_jx",
             "name": "腾讯｜视频",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/txjx.js"
         },
         {
-           "key":"MGJX",
+           "key":"mg_jx",
            "name":"芒果｜视频",
            "type":3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/mgjx.js"
         },
         {
-           "key":"AQYJX",
+           "key":"aqy_jx",
            "name":"爱奇艺｜视频",
            "type":3,
              "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/aiqiyi.js"
         },
         {
-           "key":"YKJX",
+           "key":"yk_jx",
            "name":"优酷｜视频",
            "type":3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/drpy2.min.js",
             "ext": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/ykjx.js"
         },
         {
-            "key": "BLSP",
+            "key": "bl_sp",
             "name": "哔哩｜视频",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/bilibili.py"
@@ -278,7 +278,7 @@
             "ext": "http://43.248.117.123:4680"
         },
         {
-           "key": "MKSP",
+           "key": "mk_js",
            "name": "秒看｜蓝光",
            "type": 3,
            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/get.js",
@@ -291,51 +291,51 @@
             }
         },
         {
-            "key": "XLYS",
+            "key": "xl_ys",
             "name": "雪落｜蓝光",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/xueluo.py"
         },
         {
-            "key": "GZYS",
+            "key": "gz_ys",
             "name": "瓜子｜蓝光",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/guazi.py"
         },
         {
-            "key": "HSYS",
+            "key": "hs_ys",
             "name": "华数｜蓝光",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/huashu.py"
         },
         {
-            "key": "HXQJJ",
+            "key": "hxq_hj",
             "name": "韩小圈｜蓝光",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/hanju.py"
         },
         {
-            "key": "YZKDM",
+            "key": "yzk_dm",
             "name": "樱之空｜动漫",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/yingzhikong.py"
         },
         {
-            "key": "HGDJ",
+            "key": "hg_dj",
             "name": "红果｜短剧",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/hgdj.py",
             "genre": "shortdrama"
         },
         {
-            "key": "XYDJ",
+            "key": "xy_dj",
             "name": "星芽｜短剧",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/xingyadj.py",
             "genre": "shortdrama"
         },
         {
-            "key": "BDDJ",
+            "key": "bd_dj",
             "name": "百度｜短剧",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/bddj.js",
@@ -344,7 +344,7 @@
             "filterable": 0
         },
         {
-            "key": "JHDJ",
+            "key": "jh_dj",
             "name": "聚合｜短剧",
             "type": 3,
             "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/js/jhdj.js",
