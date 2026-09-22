@@ -238,7 +238,7 @@
             "key": "BLSP",
             "name": "哔哩｜视频",
             "type": 3,
-            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/bili.py"
+            "api": "https://gh-proxy.org/raw.githubusercontent.com/ssm123-coder/a/main/py/bilibili.py"
         },
         {
             "key": "yd_yp",
