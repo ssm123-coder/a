@@ -2117,37 +2117,62 @@ var rule = {
     play_parse: true,
     lazy: $js.toString(() => {
         try {
-            let api = "" + input.split("?")[0];
-            console.log(api);
-            let response = fetch(api, {
-                method: 'get',
-                headers: {
-                    'User-Agent': 'okhttp/3.14.9',
-                    'Content-Type': 'application/x-www-form-urlencoded'
+            const apiList = [
+       'https://niubi.69mini.com/api/?key=de8570d02b2e5181978a6c47a8eb4d91&url=',
+        'https://test1.12321app.com/daoliansiquanjia.php?url=',
+        'https://v.gimy.bot/jx/api.php?url=',
+        'https://json.cfysoft.cc/api/?key=db40a4b2f15c4078301a068181bb2724&url='
+            ];
+            const targetUrl = input.split("?")[0];
+            let bata = null;
+            for (let apiBase of apiList) {
+                try {
+                    const fullApi = apiBase + encodeURIComponent(targetUrl);
+                    const response = fetch(fullApi, {
+                        method: 'get',
+                        headers: {
+                            'User-Agent': 'okhttp/3.14.9',
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    });
+                    bata = JSON.parse(response);
+                    if (bata && bata.url && bata.url.startsWith("http")) break;
+                } catch (err) {
+                    continue;
                 }
-            });
-            let bata = JSON.parse(response);
-            if (bata.url.includes("http")) {
+            }
+            log(bata)
+            if (bata && bata.url && bata.url.includes("http")) {
                 input = {
+                    header: {
+                        'User-Agent': ""
+                    },
                     parse: 0,
                     url: bata.url,
                     jx: 0,
-                    danmaku: "http://127.0.0.1:9978/proxy?do=danmu&site=js&url=http://dm.qxq6.com/zy/api.php?url=" + input.split("?")[0]
+                    danmaku: 'http://127.0.0.1:9997/proxy?do=' + targetUrl
                 };
             } else {
                 input = {
+                    header: {
+                        'User-Agent': ""
+                    },
                     parse: 0,
-                    url: input.split("?")[0],
+                    url: targetUrl,
                     jx: 1,
-                    danmaku: "http://127.0.0.1:9978/proxy?do=danmu&site=js&url=http://dm.qxq6.com/zy/api.php?url=" + input.split("?")[0]
+                    danmaku: 'http://127.0.0.1:9997/proxy?do=' + targetUrl
                 };
             }
         } catch {
+            const targetUrl = input.split("?")[0];
             input = {
+                header: {
+                    'User-Agent': ""
+                },
                 parse: 0,
-                url: input.split("?")[0],
+                url: targetUrl,
                 jx: 1,
-                danmaku: "http://127.0.0.1:9978/proxy?do=danmu&site=js&url=http://dm.qxq6.com/zy/api.php?url=" + input.split("?")[0]
+                danmaku: 'http://127.0.0.1:9997/proxy?do=' + targetUrl
             };
         }
     }),
@@ -2205,7 +2230,7 @@ var rule = {
         }
         let video_lists = json.serisesList;
         var name = json.sourceName;
-        if (/优酷/.test(name) && video_lists.length > 0) {
+        if (/youku/.test(name) && video_lists.length > 0) {
             let ourl = "https://v.youku.com/v_show/id_" + video_lists[0].videoId + ".html";
             let _img = video_lists[0].thumbUrl;
             let html = fetch(ourl, {
@@ -2264,17 +2289,17 @@ var rule = {
                     title: it.title,
                     url: play_url + adhead(url)
                 })
-            } else if (name !== "优酷") {
+            } else if (name !== "youku") {
                 d.push({
                     title: it.displayName ? it.displayName : it.title,
                     url: play_url + adhead(it.url)
                 })
             }
         });
-        VOD.vod_play_from = name;
+        VOD.vod_play_from = "优酷视频";
         VOD.vod_play_url = d.map(function(it) {
-                return it.title + "$" + it.url
-            })
+            return it.title + "$" + it.url
+        })
             .join("#");
     }),
 
