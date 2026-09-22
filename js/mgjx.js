@@ -2,7 +2,7 @@ var rule = {
     title: '百忙无果[官]',
     host: 'https://pianku.api.mgtv.com',
     homeUrl: '',
-    searchUrl: 'https://mobileso.bz.mgtv.com/msite/search/v2?q=**&pn=fypage&pc=10',
+    searchUrl: 'https://mobileso.bz.mgtv.com/applet/search/v1?channelCode=mobile-wxap&q=**&pn=fypage&pc=10&_support=10000000',
     detailUrl: 'https://pcweb.api.mgtv.com/episode/list?page=1&size=50&video_id=fyid',
     searchable: 2,
     quickSearch: 0,
@@ -10,46 +10,75 @@ var rule = {
     multi: 1,
     url: '/rider/list/pcweb/v3?platform=pcweb&channelId=fyclass&pn=fypage&pc=80&hudong=1&_support=10000000&kind=a1&area=a1',
     filter_url: 'year={{fl.year or "all"}}&sort={{fl.sort or "all"}}&chargeInfo={{fl.chargeInfo or "all"}}',
+    parse_url: [
+        "http://106.12.191.132:520/Mg.php?url=",
+        "https://test1.12321app.com/daoliansiquanjia.php?url=",
+        "http://jiexi.fc8001.top/tJYtHAIRQdMaWdKF.php?url=",
+        "https://niubi.69mini.com/api/?key=de8570d02b2e5181978a6c47a8eb4d91&url=",
+        "https://jx.xmflv.com/?url="
+            ],
+    blocked_urls: [
+        '播放失败，换其他源！'
+    ],
     headers: {
         'User-Agent': 'PC_UA'
     },
     timeout: 5000,
-    class_name: '\u832b\u832b\u7535\u5f71\u0026\u832b\u832b\u7535\u89c6\u5267\u0026\u832b\u832b\u7efc\u827a\u0026\u832b\u832b\u52a8\u6f2b\u0026\u832b\u832b\u7eaa\u5f55\u7247\u0026\u832b\u832b\u6559\u80b2\u0026\u832b\u832b\u5c11\u513f',
-    class_url: '\u0033\u0026\u0032\u0026\u0031\u0026\u0035\u0030\u0026\u0035\u0031\u0026\u0031\u0031\u0035\u0026\u0031\u0030',
+    class_name: '\u7535\u89c6\u5267\u0026\u7535\u5f71\u0026\u7efc\u827a\u0026\u5c11\u513f\u0026\u7eaa\u5f55\u7247',
+    class_url: '\u0032\u0026\u0033\u0026\u0031\u0026\u0031\u0030\u0026\u0035\u0031',
     filter: {
-        "1": getCommonFilter(),
         "2": getCommonFilter(),
         "3": getCommonFilter(),
-        "50": getCommonFilter(),
-        "51": getCommonFilter(),
-        "115": getCommonFilter()
+        "1": getCommonFilter(),
+        "10": getCommonFilter(),
+        "51": getCommonFilter()
     },
     limit: 20,
     play_parse: true,
     lazy: $js.toString(() => {
-        try {
-            let api = "http://yunhai.zhujiale.cn/api/?key=a29aa5d71a4e91b991294356b864e83e&url=" + input.split("?")[0];
-            console.log(api);
-            let response = fetch(api, {
-                method: 'get',
-                headers: {
-                    'User-Agent': 'okhttp/3.14.9',
-                    'Content-Type': 'application/x-www-form-urlencoded'
+        let apiList = rule.parse_url;
+        let targetSrc = input.split("?")[0];
+        let finalUrl = null;
+        function isBad(u) {
+            if(!u) return true;
+            return rule.blocked_urls.some(b => u.includes(b));
+        }
+        for(let i=0;i<apiList.length;i++){
+            try{
+                let fullApi = apiList[i] + encodeURIComponent(targetSrc);
+                let resText = fetch(fullApi,{
+                    method:"GET",
+                    headers:{
+                        "User-Agent":"Mozilla/5.0",
+                        "Referer":"https://www.mgtv.com/"
+                    },
+                    timeout:6000
+                });
+                let ret = JSON.parse(resText);
+                let playUrl = ret.url || ret.data || ret.result;
+                if(playUrl && playUrl.startsWith("http") && !isBad(playUrl)){
+                    finalUrl = playUrl;
+                    break;
                 }
-            });
-            let bata = JSON.parse(response);
+            }catch(err){
+                continue;
+            }
+        }
+        if(finalUrl){
             input = {
-                parse: 0,
-                url: bata.url.includes("mgtv") ? bata.url : input.split("?")[0],
-                jx: bata.url.includes("mgtv") ? 0 : 1,
-                danmaku: "http://127.0.0.1:9978/proxy?do=danmu&site=js&url=" + input.split("?")[0]
+                header:{"User-Agent":""},
+                parse:0,
+                url:finalUrl,
+                jx:0,
+                danmaku:'http://127.0.0.1:9978/proxy?do=danmu&site=js&url=' + targetSrc
             };
-        } catch {
+        }else{
             input = {
-                parse: 0,
-                url: input.split("?")[0],
-                jx: 1,
-                danmaku: "http://127.0.0.1:9978/proxy?do=danmu&site=js&url=" + input.split("?")[0]
+                header:{"User-Agent":""},
+                parse:0,
+                url:targetSrc,
+                jx:1,
+                danmaku:'http://127.0.0.1:9978/proxy?do=danmu&site=js&url=' + targetSrc
             };
         }
     }),
@@ -57,11 +86,9 @@ var rule = {
     二级: $js.toString(() => {
         fetch_params.headers.Referer = "https://www.mgtv.com";
         fetch_params.headers["User-Agent"] = MOBILE_UA;
-
         let videoId = input.split('video_id=')[1].split('&')[0];
         let infoUrl = `https://pcweb.api.mgtv.com/video/info?allowedRC=1&vid=${videoId}&type=b&_support=10000000`;
         let infoData = JSON.parse(request(infoUrl));
-
         if (infoData && infoData.data && infoData.data.info) {
             let detail = infoData.data.info.detail || {};
             VOD = {
@@ -76,21 +103,18 @@ var rule = {
             };
             if (detail.img) VOD.vod_pic = detail.img;
         }
-
         let d = [];
         let html = request(input);
         let json = JSON.parse(html);
         let host = "https://www.mgtv.com";
         let ourl = json.data.list.length > 0 ? json.data.list[0].url : json.data.series[0].url;
         if (!/^http/.test(ourl)) ourl = host + ourl;
-
         fetch_params.headers["User-Agent"] = MOBILE_UA;
         html = request(ourl);
         if (html.includes("window.location =")) {
             ourl = pdfh(html, "meta[http-equiv=refresh]&&content").split("url=")[1];
             html = request(ourl);
         }
-
         try {
             let details = pdfh(html, ".m-details&&Html").replace(/h1>/, "h6>").replace(/div/g, "br");
             let actor = "",
@@ -106,7 +130,7 @@ var rule = {
                 time = "已完结";
             }
             let _img = pd(html, ".video-img&&img&&src");
-            let JJ = pdfh(html, ".desc&&Text").split("牛马简介：")[1];
+            let JJ = pdfh(html, ".desc&&Text").split("简介：")[1];
             VOD.vod_name = VOD.vod_name || pdfh(html, ".vt-txt&&Text");
             VOD.type_name = VOD.type_name || pdfh(html, "p:eq(0)&&Text").substr(0, 6);
             VOD.vod_area = VOD.vod_area || pdfh(html, "p:eq(1)&&Text");
@@ -119,7 +143,6 @@ var rule = {
         } catch (e) {
             log("获取影片信息发生错误:" + e.message);
         }
-
         function getRjpg(imgUrl, xs) {
             xs = xs || 3;
             let picSize = /jpg_/.test(imgUrl) ? imgUrl.split("jpg_")[1].split(".")[0] : false;
@@ -131,7 +154,6 @@ var rule = {
             }
             return /jpg_/.test(imgUrl) && rjpg ? imgUrl.replace(imgUrl.split("jpg_")[1], rjpg) : imgUrl;
         }
-
         if (json.data.total === 1 && json.data.list.length === 1) {
             let data = json.data.list[0];
             d.push({
@@ -157,7 +179,7 @@ var rule = {
         } else {
             print(input + "暂无片源");
         }
-        VOD.vod_play_from = "\u5929\u795e\u0049\u0059\u2014\u2014\u832b\u832b";
+        VOD.vod_play_from = "\u6052\u8f69";
         VOD.vod_play_url = d.map(function(it) {
             return it.title + "$" + it.url;
         }).join("#");
@@ -169,30 +191,23 @@ var rule = {
         let d = [];
         let html = request(input);
         let json = JSON.parse(html);
-        json.data.contents.forEach(function(data) {
-            if (data.type && data.type == 'media') {
-                let item = data.data[0];
-                if (item.source === "imgo") {
-                    let fyclass = '';
-                    try {
-                        fyclass = item.rpt.match(/idx=(.*?)&/)[1] + '$';
-                    } catch (e) {
-                        log(e.message);
-                    }
-                    d.push({
-                        title: item.title.replace(/<B>|<\/B>/g, ''),
-                        img: item.img || '',
-                        content: '',
-                        desc: item.desc.join(','),
-                        url: fyclass + item.url.match(/.*\/(.*?)\.html/)[1]
-                    });
-                }
-            }
-        });
+        let contents = json?.data?.contents || [];
+        for(let i of contents){
+            if(!i.data || !i.data.length) continue;
+            let item = i.data[0];
+            if(!item.vid || !item.img) continue;
+            let desc = Array.isArray(i.desc) ? i.desc.join(',') : '';
+            d.push({
+                title: item.title.replace(/<B>|<\/B>/g, ''),
+                img: item.img,
+                content: '',
+                desc: desc,
+                url: item.vid
+            })
+        }
         setResult(d);
     })
 };
-
 function getCommonFilter() {
     return [{
         "key": "chargeInfo",
@@ -208,14 +223,6 @@ function getCommonFilter() {
             {
                 "n": "vip",
                 "v": "b2"
-            },
-            {
-                "n": "VIP用券",
-                "v": "b3"
-            },
-            {
-                "n": "付费点播",
-                "v": "b4"
             }
         ]
     }, {
