@@ -293,6 +293,7 @@ var rule = {
 lazy: $js.toString(() => {
     
     let apiList = [
+        'http://106.12.191.132:520/Mg.php?url=',
         'https://test1.12321app.com/daoliansiquanjia.php?url=',
         'https://v.gimy.bot/jx/api.php?url='
     ];
