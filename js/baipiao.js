@@ -1,5 +1,5 @@
 var rule = {
-    title: '白嫖鸭',
+    title: 'ATMB',
     host: '',
     homeUrl: '',
     searchUrl: '**',
@@ -39,7 +39,6 @@ var rule = {
         ]
     },
 
-    // 播放：直接返回播放页地址，绿豆后台解析
     lazy: $js.toString(() => {
         let playUrl = input;
         if (playUrl.indexOf("$") > -1) {
@@ -53,7 +52,6 @@ var rule = {
     }),
 
     一级: $js.toString(() => {
-        // drpy2打平eval，所有函数必须内联
         let tid = MY_CATE || 'movie';
         let CATE_MAP = {
             'movie': [['qq', 'movie'], ['mgtv', '3'], ['iqiyi', '1'], ['iqiyi', '16'], ['bili', '2']],
@@ -99,14 +97,11 @@ var rule = {
         var fl = MY_FL || {};
         var pg = MY_PAGE || 1;
 
-        // 构建腾讯filter_params（只保留类型/地区/年份）
         var qqFp = 'sort=75';
         if (fl.itype && fl.itype !== '-1') qqFp += '&itype=' + fl.itype;
         if (fl.iarea && fl.iarea !== '-1') qqFp += '&iarea=' + fl.iarea;
         if (fl.iyear && fl.iyear !== '-1') qqFp += '&iyear=' + fl.iyear;
 
-        // 先生成各平台请求，再一次并发拉取。旧宿主没有batchFetch时自动
-        // 回退为原来的串行request，不影响绿豆UI9兼容性。
         let categoryUa = (typeof PC_UA !== 'undefined' && PC_UA) ? PC_UA : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36';
         let categoryTasks = platforms.map(function (pf) {
             let platform = pf[0];
@@ -118,7 +113,7 @@ var rule = {
                     'User-Agent': categoryUa, 'Content-Type': 'application/json',
                     'origin': 'https://v.qq.com', 'referer': 'https://v.qq.com/'
                 };
-                // 体育/中视频/宠物TV 网页端走 PageService/getPage（getMVLPage 对其返回空）
+
                 if (chanId === 'sports' || chanId === 'midvideo' || chanId === 'pettv') {
                     let gp = {
                         page_params: { page_type: 'channel', page_id: String(cid), scene: 'channel', new_mark_label_enabled: '1' },
@@ -170,7 +165,6 @@ var rule = {
             };
         });
 
-        // getPage频道(体育/中视频/宠物)的游标必须链式翻页，单独处理
         function fetchGetPage(task){
             try {
                 var cid = task.cid;
@@ -231,7 +225,7 @@ var rule = {
                                 qqSeen[p.cid] = 1;
                                 let remark = p.third_title || p.update_desc || p.second_title || p.sub_title || p.episode_updated || p.mark_label || p.year || '';
                                 let pic = p.image_url_vertical || p.new_pic_vt || p.new_pic_hz || p.pic_276x386 || p.image_url || p.ready_image_url || '';
-                                all.push({ title: title, img: pic, pic_url: pic, url: 'qq__' + p.cid, desc: '腾讯视频-4K' });
+                                all.push({ title: title, img: pic, pic_url: pic, url: 'qq__' + p.cid, desc: '腾讯' });
                             }
                         }
                         Object.keys(node).forEach(function (key) {
@@ -248,7 +242,7 @@ var rule = {
                             let mgtvId = item.playPartId || item.clipId;
                             let remark = item.updateInfo || (item.rightCorner && item.rightCorner.text) || item.update_info || item.subtitle || '';
                             let pic = item.img || '';
-                            all.push({ title: item.title, img: pic, pic_url: pic, url: 'mgtv__' + mgtvId, desc: '芒果视频-4K' });
+                            all.push({ title: item.title, img: pic, pic_url: pic, url: 'mgtv__' + mgtvId, desc: '芒果' });
                         }
                     });
                 } else if (platform === 'iqiyi') {
@@ -269,7 +263,7 @@ var rule = {
                             else if (total) remark = '共' + total + '集';
                             else remark = item.focus || item.period || item.subtitle || '';
                             if (item.score && channel !== 1) remark = item.score + '分\t' + remark;
-                            all.push({ title: item.name, img: pic, pic_url: pic, url: 'iqiyi__' + item.albumId, desc: '爱奇艺-2K' });
+                            all.push({ title: item.name, img: pic, pic_url: pic, url: 'iqiyi__' + item.albumId, desc: '爱奇艺' });
                         }
                     });
                 } else if (platform === 'bili') {
@@ -278,7 +272,7 @@ var rule = {
                         if (vod.season_id && vod.title) {
                             let remark = (vod.new_ep && vod.new_ep.index_show) || vod.index_show || vod.badge || '';
                             let pic = vod.cover || '';
-                            all.push({ title: vod.title, img: pic, pic_url: pic, url: 'bili__' + vod.season_id, desc: '哔哩哔哩-4K' });
+                            all.push({ title: vod.title, img: pic, pic_url: pic, url: 'bili__' + vod.season_id, desc: '哔哩哔哩' });
                         }
                     });
                 }
@@ -290,7 +284,7 @@ var rule = {
     }),
 
     二级: $js.toString(() => {
-        // 兼容DRPY环境变量
+
         if (typeof log === 'undefined') log = function () {};
         if (typeof fetch_params === 'undefined') fetch_params = { headers: {} };
         if (!fetch_params.headers) fetch_params.headers = {};
@@ -314,7 +308,6 @@ var rule = {
                 var epList = (epJson && epJson.data) ? epJson.data.list || [] : [];
                 var totalPage = (epJson && epJson.data) ? epJson.data.total_page || 1 : 1;
 
-                // 如果返回空，vid是专辑ID，从专辑页获取视频ID
                 if (!epList.length) {
                     fetch_params.headers['User-Agent'] = PC_UA;
                     var albumHtml = request('https://www.mgtv.com/b/' + vid + '/');
@@ -341,7 +334,6 @@ var rule = {
                     }
                 }
 
-                // 分页获取全部剧集
                 if (totalPage > 1) {
                     for (var pi = 2; pi <= totalPage; pi++) {
                         try {
@@ -352,7 +344,6 @@ var rule = {
                     }
                 }
 
-                // 获取详情页标题和图片
                 if (epList.length) {
                     fetch_params.headers['User-Agent'] = MOBILE_UA;
                     var ourl = epList[0].url;
@@ -380,7 +371,6 @@ var rule = {
                     }
                 }
 
-                // 构建播放列表
                 for (var ei = 0; ei < epList.length; ei++) {
                     var ep = epList[ei];
                     if (ep.isIntact == '1' && ep.url) {
@@ -389,7 +379,7 @@ var rule = {
                         d.push({ title: ep.t4 || ep.t2 || '正片', url: playUrl });
                     }
                 }
-                // 兜底标题
+
                 if (!VOD.vod_name && epList[0]) {
                     var rawName = epList[0].t3 || '';
                     VOD.vod_name = rawName.replace(/\s*第\d+集.*$/, '').trim();
@@ -449,7 +439,6 @@ var rule = {
                 }
 
             } else if (platform === 'iqiyi') {
-                // 参考爱奇艺.js：先请求详情API建立session，再按channelId获取剧集
                 fetch_params.headers['User-Agent'] = PC_UA;
                 let detailUrl = 'https://pcw-api.iqiyi.com/video/video/videoinfowithuser/' + vid + '?agent_type=1&authcookie=&subkey=' + vid + '&subscribe=1';
                 let html = request(detailUrl);
@@ -461,10 +450,8 @@ var rule = {
 
                 let playlists = [];
                 if (channelId === 1 || channelId === 5) {
-                    // 电影：直接用playUrl
                     playlists = [{ playUrl: json.playUrl, shortTitle: json.shortTitle || '正片' }];
                 } else if (channelId === 6) {
-                    // 综艺：用svlistinfo
                     try {
                         let qs = (json.period || '').split('-')[0];
                         let listUrl = 'https://pcw-api.iqiyi.com/album/source/svlistinfo?cid=6&sourceid=' + albumId + '&timelist=' + qs;
@@ -476,7 +463,6 @@ var rule = {
                         }
                     } catch (e) { log('爱奇艺综艺错误: ' + e.message); }
                 } else {
-                    // 电视剧等：用avlistinfo（需先请求详情建立session）
                     try {
                         let listUrl = 'https://pcw-api.iqiyi.com/albums/album/avlistinfo?aid=' + albumId + '&size=200&page=1';
                         let listData = JSON.parse(request(listUrl)).data || {};
@@ -484,8 +470,6 @@ var rule = {
                         let total = listData.total || 0;
                         if (total > 200) {
                             let totalPages = Math.ceil(total / 200);
-                            // 不能限制为前3页：每页200集会把《航海王》等长篇动漫
-                            // 固定截断为600集。按接口total把所有分页完整取回。
                             for (let page = 2; page <= totalPages; page++) {
                                 try {
                                     let pageUrl = 'https://pcw-api.iqiyi.com/albums/album/avlistinfo?aid=' + albumId + '&size=200&page=' + page;
@@ -506,7 +490,7 @@ var rule = {
             }
         } catch (e) { log('二级错误: ' + e.message); }
 
-        VOD.vod_play_from = '白嫖鸭';
+        VOD.vod_play_from = 'ATMB';
         VOD.vod_play_url = d.map(function (it) { return it.title + '$' + it.url; }).join('#');
         setResult(d);
     }),
@@ -514,10 +498,8 @@ var rule = {
     搜索: $js.toString(() => {
         let keyword = KEY;
         let PRIORITY = { 'mgtv': 0, 'bili': 1, 'qq': 2, 'iqiyi': 3 };
-        // 兼容PC_UA全局变量
         if (typeof PC_UA === 'undefined') var PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-        // MD5实现（确保DRPY环境可用）
         function md5(s) {
             function rh(n, j) { var s32 = (n & 0xFFFF) + (j & 0xFFFF); var hi16 = (n >> 16) + (j >> 16) + (s32 >> 16); return (hi16 << 16) | (s32 & 0xFFFF); }
             function rol(n, c) { return (n << c) | (n >>> (32 - c)); }
@@ -621,11 +603,9 @@ var rule = {
                 let t = cleanTitle(item.title);
                 if (!t || t.length < 2) return false;
                 if (t.indexOf('<') > -1 || t.indexOf('>') > -1) return false;
-                // 过滤全网搜和外站资源
                 let desc = item.desc || '';
                 if (desc.indexOf('全网搜') > -1 || desc.indexOf('外站') > -1) return false;
                 let pf = item.url.split('__')[0];
-                // 腾讯/芒果过滤带《》的新闻/路透，哔哩/爱奇艺不过滤
                 if (pf === 'qq' || pf === 'mgtv') {
                     if (/[《》]/.test(t)) return false;
                 }
@@ -641,13 +621,11 @@ var rule = {
                 let pb = PRIORITY[bk] !== undefined ? PRIORITY[bk] : 99;
                 return pa - pb;
             });
-            // 搜索结果不去重，显示4个平台的匹配结果
             return filtered;
         }
 
         let all = [];
 
-        // 统一过滤：预告/花絮/剪辑/解说/新闻/路透等非正片内容
         let FILTER_KW = ['预告', '花絮', '片花', '剪辑', '片段', '解说', '速看', '速通', '合集', '精彩', '集锦', '盘点', '回顾', 'MV', '主题曲', '插曲', '彩蛋', '特辑', '独家', '专访', '纯享', '制作', '幕后', '宣传', '反应', 'reaction', '名场面', '抢先看', '评测', 'cut', 'CUT', '音频', '原创', '深度', '解读', '看完', '分钟', '路透', '曝光', '造型', '片场', '背台词', '告别', '长文', '新剧', '公子', '呆萌', '仪态', '清冷', '温润', '仙气', '白衣', '古装', '高马尾', '蓝衣', '素衣', '青色'];
         function isMainContent(title) {
             if (!title) return false;
@@ -656,8 +634,6 @@ var rule = {
             return !FILTER_KW.some(function (kw) { return title.indexOf(kw) > -1; });
         }
 
-        // 四个平台的首轮搜索并发请求；不支持batchFetch的旧宿主会自动
-        // 使用原request串行回退，保证绿豆UI9不同版本都能运行。
         let searchUa = (typeof PC_UA !== 'undefined' && PC_UA) ? PC_UA : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36';
         let MGTV_SALT = 'xHAa3YZflWLogZUOzl';
         function searchUuid() {
@@ -704,8 +680,6 @@ var rule = {
             { key: 'mgtv', url: buildMgtvSearchUrl(), options: { headers: { 'User-Agent': searchUa, 'Referer': 'https://www.mgtv.com' } } },
             { key: 'bili7', url: buildBiliSearchUrl(7), options: { headers: { 'User-Agent': searchUa, 'Referer': 'https://www.bilibili.com' } } }
         ];
-        // 并发环境把哔哩影视(type=8)也放进同一批，不增加等待时间；
-        // 串行环境仍按命中情况决定是否请求，避免无谓变慢。
         if (typeof batchFetch === 'function') {
             searchTasks.push({ key: 'bili8', url: buildBiliSearchUrl(8), options: { headers: { 'User-Agent': searchUa, 'Referer': 'https://www.bilibili.com' } } });
         }
@@ -730,7 +704,6 @@ var rule = {
         let searchHtml = {};
         searchTasks.forEach(function (task, index) { searchHtml[task.key] = searchResponses[index] || ''; });
 
-        // 芒果搜索
         try {
             let html = searchHtml.mgtv;
             let json = JSON.parse(html);
@@ -745,7 +718,6 @@ var rule = {
                         let img = item.pic || '';
                         let vid = '';
                         let src = (item.sourceList && item.sourceList.length) ? item.sourceList[0] : null;
-                        // 过滤芒果单视频(/s/格式)，只保留专辑(/b/格式)
                         let pageUrl = (src && src.url) || item.url || '';
                         if (pageUrl.indexOf('/s/') > -1) return;
                         if (src) {
@@ -764,8 +736,6 @@ var rule = {
                         }
                         if (!vid || !title) return;
                         if (!isMainContent(title)) return;
-                        // 参照mg(1).js保留搜索结果中的标签备注与播出时间；
-                        // updateInfo存在时仍优先显示更直接的更新集数。
                         let descParts = [];
                         if (Array.isArray(item.desc)) {
                             item.desc.forEach(function (x) {
@@ -774,13 +744,12 @@ var rule = {
                         }
                         if (item.playTime) descParts.push(item.playTime);
                         let remark = item.updateInfo || descParts.join(',') || item.subtitle || '';
-                        all.push({ title: title, img: img, pic_url: img, url: 'mgtv__' + vid, desc: '芒果视频-4K' });
+                        all.push({ title: title, img: img, pic_url: img, url: 'mgtv__' + vid, desc: '芒果' });
                     });
                 });
             }
         } catch (e) { log('芒果搜索错误: ' + e.message); }
 
-        // 哔哩搜索（参考bili.js实现）
         try {
             function biliAppSearch(t, firstHtml) {
                 let text = firstHtml;
@@ -799,14 +768,10 @@ var rule = {
                     seen[aid] = 1;
                     var title = (vod.title || '').replace(/<[^>]+>/g, '').trim();
                     var img = (vod.cover || '').trim();
-                    // 搜索接口字段不固定：优先集数，其次沿用bili.js的类型备注。
                     var remark = (vod.new_ep && vod.new_ep.index_show) || vod.index_show || vod.styles || vod.badge || vod.season_type_name || '';
-                    // 哔哩不过滤，直接加入（用原始标题）
-                    all.push({ title: title, img: img, pic_url: img, url: 'bili__' + aid, desc: '哔哩哔哩-4K' });
+                    all.push({ title: title, img: img, pic_url: img, url: 'bili__' + aid, desc: '哔哩哔哩' });
                 });
             }
-            // 动漫(type=7)已命中完全同名结果时，不再重复请求影视(type=8)。
-            // 电视剧等在type=7未命中时仍会继续查询type=8，不影响《外来媳妇本地郎》。
             var biliItems7 = biliAppSearch(7, searchHtml.bili7);
             biliPush(biliItems7);
             var biliNormKeyword = normTitle(keyword);
@@ -816,7 +781,6 @@ var rule = {
             if (!biliHasExact) biliPush(biliAppSearch(8, searchHtml.bili8));
         } catch (e) { log('哔哩搜索错误: ' + e.message); }
 
-        // 腾讯搜索
         try {
             let html = searchHtml.qq;
             let json = JSON.parse(html);
@@ -830,7 +794,6 @@ var rule = {
                 });
             }
 
-            // 用viewType过滤正片（viewType=1是正片专辑，viewType=100是剪辑/解说）
             itemList.forEach(function (it) {
                 if (it && it.videoInfo) {
                     let cid = (it.doc && it.doc.id) || it.videoInfo.cid || it.videoInfo.coverId || '';
@@ -839,16 +802,14 @@ var rule = {
                     let title = cleanTitle(it.videoInfo.title || '');
                     if (!title || title.indexOf('<') > -1 || title.indexOf('>') > -1) return;
                     if (!isMainContent(title)) return;
-                    // 只保留正片专辑（viewType=1），过滤剪辑/解说（viewType=100）
                     let viewType = it.videoInfo.viewType;
-                    if (viewType !== 1 && viewType !== 25) return; // 25可能是最终季/特别篇
+                    if (viewType !== 1 && viewType !== 25) return; 
                     let desc = it.videoInfo.secondLine || it.videoInfo.updateInfo || it.videoInfo.episodeUpdated || it.videoInfo.secondTitle || it.videoInfo.subTitle || '';
                     all.push({ title: title, img: it.videoInfo.imgUrl || it.videoInfo.pic || '', pic_url: it.videoInfo.imgUrl || it.videoInfo.pic || '', url: 'qq__' + cid, desc: '腾讯视频-4K' });
                 }
             });
         } catch (e) { log('腾讯搜索错误: ' + e.message); }
 
-        // 爱奇艺搜索
         try {
             let html = searchHtml.iqiyi;
             let json = JSON.parse(html);
@@ -877,7 +838,7 @@ var rule = {
                     remark = album.period || album.focus || album.albumSubtitle || album.subTitle || '';
                 }
                 if (album.score) remark = album.score + '分\t' + remark;
-                all.push({ title: title, img: pic, pic_url: pic, url: 'iqiyi__' + albumId, desc: '爱奇艺-2K' });
+                all.push({ title: title, img: pic, pic_url: pic, url: 'iqiyi__' + albumId, desc: '爱奇艺' });
             });
         } catch (e) { log('爱奇艺搜索错误: ' + e.message); }
 
