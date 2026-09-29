@@ -272,7 +272,7 @@ var rule = {
                         if (vod.season_id && vod.title) {
                             let remark = (vod.new_ep && vod.new_ep.index_show) || vod.index_show || vod.badge || '';
                             let pic = vod.cover || '';
-                            all.push({ title: vod.title, img: pic, pic_url: pic, url: 'bili__' + vod.season_id, desc: '哔哩哔哩' });
+                            all.push({ title: vod.title, img: pic, pic_url: pic, url: 'bili__' + vod.season_id, desc: '哔哩' });
                         }
                     });
                 }
@@ -405,7 +405,6 @@ var rule = {
                 VOD.vod_pic = result.cover || '';
 
             } else if (platform === 'qq') {
-                // 参考腾讯.js：用fetch请求float_vinfo2
                 let QZOutputJson;
                 fetch_params.headers['User-Agent'] = PC_UA;
                 let detailUrl = 'https://node.video.qq.com/x/api/float_vinfo2?cid=' + vid;
@@ -629,7 +628,6 @@ var rule = {
         let FILTER_KW = ['预告', '花絮', '片花', '剪辑', '片段', '解说', '速看', '速通', '合集', '精彩', '集锦', '盘点', '回顾', 'MV', '主题曲', '插曲', '彩蛋', '特辑', '独家', '专访', '纯享', '制作', '幕后', '宣传', '反应', 'reaction', '名场面', '抢先看', '评测', 'cut', 'CUT', '音频', '原创', '深度', '解读', '看完', '分钟', '路透', '曝光', '造型', '片场', '背台词', '告别', '长文', '新剧', '公子', '呆萌', '仪态', '清冷', '温润', '仙气', '白衣', '古装', '高马尾', '蓝衣', '素衣', '青色'];
         function isMainContent(title) {
             if (!title) return false;
-            // 只过滤《》括号（新闻/路透标题），不过滤其他括号（多季剧名可能带括号）
             if (/[《》]/.test(title)) return false;
             return !FILTER_KW.some(function (kw) { return title.indexOf(kw) > -1; });
         }
@@ -769,7 +767,7 @@ var rule = {
                     var title = (vod.title || '').replace(/<[^>]+>/g, '').trim();
                     var img = (vod.cover || '').trim();
                     var remark = (vod.new_ep && vod.new_ep.index_show) || vod.index_show || vod.styles || vod.badge || vod.season_type_name || '';
-                    all.push({ title: title, img: img, pic_url: img, url: 'bili__' + aid, desc: '哔哩哔哩' });
+                    all.push({ title: title, img: img, pic_url: img, url: 'bili__' + aid, desc: '哔哩' });
                 });
             }
             var biliItems7 = biliAppSearch(7, searchHtml.bili7);
@@ -805,7 +803,7 @@ var rule = {
                     let viewType = it.videoInfo.viewType;
                     if (viewType !== 1 && viewType !== 25) return; 
                     let desc = it.videoInfo.secondLine || it.videoInfo.updateInfo || it.videoInfo.episodeUpdated || it.videoInfo.secondTitle || it.videoInfo.subTitle || '';
-                    all.push({ title: title, img: it.videoInfo.imgUrl || it.videoInfo.pic || '', pic_url: it.videoInfo.imgUrl || it.videoInfo.pic || '', url: 'qq__' + cid, desc: '腾讯视频-4K' });
+                    all.push({ title: title, img: it.videoInfo.imgUrl || it.videoInfo.pic || '', pic_url: it.videoInfo.imgUrl || it.videoInfo.pic || '', url: 'qq__' + cid, desc: '腾讯' });
                 }
             });
         } catch (e) { log('腾讯搜索错误: ' + e.message); }
