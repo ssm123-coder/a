@@ -17,13 +17,16 @@ class Spider(Spider):
         'cmskey': 'wP5bvxoc3yv7FoBQENFZuAF0EUYr4LTy',
         'RawPlayUrl': 0,
         # ldmax 内置解析接口
-        'parse_api': 'http://61.184.23.217:6163/api/index?parsesId=4&appid=10001&videoUrl='
+        'parse_api': 'http://4kzj.lyyytv.cn/api/index/store?id=2&appid=10001&videoUrl='
     }
     WEB_PARSES = [
         'http://yecao.icu/api/index?parsesId=3&appid=10000&videoUrl=',
         'http://61.184.23.217:6163/api/index?parsesId=4&appid=10001&videoUrl=',
         'http://zhuyun.shanhaiguanwu.top/api/index?parsesId=1&appid=10000&videoUrl=',
         'http://lieyuyunui6.qijiyun.vip//api/index?parsesId=2&appid=10006&videoUrl=',
+        'http://61.184.23.217:6163/api/index?parsesId=4&appid=10001&videoUrl=',
+        'http://lieyuyunui6.qijiyun.vip//api/index/store?id=16&appid=10006&videoUrl=',
+        'https://u6.69mzf.cn/api/index/store?id=2&appid=10006&videoUrl=',
     ]
 
     def init(self, extend=''):
