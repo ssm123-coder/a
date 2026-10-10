@@ -28,7 +28,8 @@ CERT_MD5 = '090DA8F91D3F60CC6CB250D86F06FE12'
 CERT_SHA1 = '3DADB42485B7F864E766479ADA6B1176D81D8D73'
 PKG = 'com.mxj.wylcjbxyx'
 VC = '3024'
-HOST = 'https://juziapp.hzhcbkj.cn'
+#HOST = 'https://juziapp.hzhcbkj.cn'
+HOST = 'http://103.36.167.27:18004'
 UA = 'okhttp/3.12.1'
 
 _e = base64.b64encode(AES.new(PW_SAFE, AES.MODE_ECB).encrypt(pad(
