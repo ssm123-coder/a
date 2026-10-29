@@ -1,530 +1,381 @@
 # -*- coding: utf-8 -*-
-# 橘汁视频 TVBox spider — 华谊同款协议栈移植
-import json
-import re
-import sys
-import time
-import base64
-import string
-import random
-import hashlib
-import urllib.request
-import urllib.parse
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_v1_5, AES
-from Crypto.Util.Padding import pad, unpad
-
+# 橘汁TV v1.0 橘汁3.0.2.4协议端到端打通落地(TV版3.0.2.3 域名池gdsaj)
+# RSA握手+AES安全通道+proto接口; fakePos=3; safeCode32静态; 424教训: publicParams数值字段必须int
+import sys,json,time,base64,random,re,threading
+from urllib.parse import quote
+import requests
+sys.path.append('..')
 try:
-    from base.spider import Spider as _Base
-except Exception:
-    class _Base:
-        pass
-
-PUB1_B64 = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp9Ek4wIlQAtwFnuBRlsFiow2tr+4UOciGeNKbY7nL74etUqUb6fvpOSOHhFEfaWlfwUpOB17x3JEL3No19nfjCeVYrYPjlJcgoqUWH/tfIfFAQWvtxBIBlKazkhw8d3ChysWmeWRikKqkBsVRY4oqNPuj4sjm6Zult0U4I4prRQIDAQAB'
-NATIVE_K = b'ed5fdsgucxumegqa'
-SAFE = b'OC1A06E197EF10CF3F6058CA7A803B5E'
-PW_SAFE = b'ZU1DSFFWNENKMDYXMZDVNSTHTDRRPT0'
-CERT_MD5 = '090DA8F91D3F60CC6CB250D86F06FE12'
-CERT_SHA1 = '3DADB42485B7F864E766479ADA6B1176D81D8D73'
-PKG = 'com.dasjkjfd.mgd'
-VC = '3060'
-HOST = 'https://juziapp.hzhcbkj.cn'
-UA = 'okhttp/3.12.1'
-
-_e = base64.b64encode(AES.new(PW_SAFE, AES.MODE_ECB).encrypt(pad(
-    (CERT_MD5 + '######' + CERT_SHA1 + '~~~~~~' + PKG + '>>>+++' + VC).encode(), 16))).decode()
-_e2 = base64.b64encode(_e.encode()).decode()
-SAFECODE = (_e2[:16] + _e2[-16:]).upper()
-
-
-def _varint(n):
-    b = b''
-    while True:
-        x = n & 0x7f
-        n >>= 7
-        if n:
-            b += bytes([x | 0x80])
+    from base.spider import Spider
+except ImportError:
+    class Spider:
+        def fetch(self, url, headers=None, **kw):
+            kw.pop('timeout', None)
+            r = requests.get(url, headers=headers, timeout=15, **kw)
+            r.encoding = 'utf-8'
+            return r
+HOSTS = ['https://gdsaj.hzhcbkj.cn']
+TXT_URLS = ['https://tv-1349250429.cos.ap-guangzhou.myqcloud.com/tv1.txt',
+            'https://tv2-1349250429.cos.ap-chengdu.myqcloud.com/tv2.txt',
+            'https://tv3-1349250429.cos.ap-shanghai.myqcloud.com/tv3.txt']
+CATS = {'1': '电影', '2': '剧集', '3': '综艺', '4': '动漫', '5': '短剧', '6': '直播'}
+TID = {'1': 20, '2': 21, '3': 22, '4': 23, '5': 24, '6': 25}
+PUB1_N = 0xabf12cd9863632fabb326b52b4f6df1dd8ae74a56168064814a8ca4a3a25bedc811529de1e4ddbe0f5148e8d0f36932a4be91f419ec9ab4b557cb383d50f08d06d4b588533cf0bd1f3d7aa98eeba43ea6d1ddafaf4f7f529590e6e3b2f4f474413aec8a8bde67e0c87bd8dcdc2fb3042bbf919498fd1f2cb702688a2b648b783
+PUB1_E = 65537
+SAFE32 = 'SGNWTJHSK05SU3NBYITNB2FJD3FNPT0='
+SAFESECRET = 'OC1A06E197EF10CF3F6058CA7A803B5E'
+VAPP = '3023'
+UA = 'okhttp/4.9.0'
+SBOX = [99,124,119,123,242,107,111,197,48,1,103,43,254,215,171,118,202,130,201,125,250,89,71,240,173,212,162,175,156,164,114,192,183,253,147,38,54,63,247,204,52,165,229,241,113,216,49,21,4,199,35,195,24,150,5,154,7,18,128,226,235,39,178,117,9,131,44,26,27,110,90,160,82,59,214,179,41,227,47,132,83,209,0,237,32,252,177,91,106,203,190,57,74,76,88,207,208,239,170,251,67,77,51,133,69,249,2,127,80,60,159,168,81,163,64,143,146,157,56,245,188,182,218,33,16,255,243,210,205,12,19,236,95,151,68,23,196,167,126,61,100,93,25,115,96,129,79,220,34,42,144,136,70,238,184,20,222,94,11,219,224,50,58,10,73,6,36,92,194,211,172,98,145,149,228,121,231,200,55,109,141,213,78,169,108,86,244,234,101,122,174,8,186,120,37,46,28,166,180,198,232,221,116,31,75,189,139,138,112,62,181,102,72,3,246,14,97,53,87,185,134,193,29,158,225,248,152,17,105,217,142,148,155,30,135,233,206,85,40,223,140,161,137,13,191,230,66,104,65,153,45,15,176,84,187,22]
+IS = [0]*256
+for _i,_v in enumerate(SBOX): IS[_v]=_i
+RCON = [1,2,4,8,16,32,64,128,27,54,108,216,171,77]
+def _xt(x):
+    x <<= 1
+    if x & 256: x ^= 0x11b
+    return x & 255
+def _mul(a, b):
+    r = 0
+    while b:
+        if b & 1: r ^= a
+        a = _xt(a); b >>= 1
+    return r
+def _ke(key):
+    nk = len(key) // 4; nr = nk + 6
+    w = [list(key[4*i:4*i+4]) for i in range(nk)]
+    for i in range(nk, 4 * (nr + 1)):
+        t = w[i - 1][:]
+        if i % nk == 0:
+            t = t[1:] + t[:1]
+            t = [SBOX[x] for x in t]
+            t[0] ^= RCON[i // nk - 1]
+        elif nk > 6 and i % nk == 4:
+            t = [SBOX[x] for x in t]
+        w.append([w[i - nk][j] ^ t[j] for j in range(4)])
+    return w
+def _sr(s, dec=False):
+    for r in range(1, 4):
+        row = s[r][:]
+        for c in range(4):
+            s[r][c] = row[(c - r) % 4] if dec else row[(c + r) % 4]
+def _sbx(s, dec=False):
+    T = IS if dec else SBOX
+    for r in range(4):
+        for c in range(4): s[r][c] = T[s[r][c]]
+def _mc(s, dec=False):
+    for c in range(4):
+        a = [s[r][c] for r in range(4)]
+        if not dec:
+            s[0][c] = _mul(a[0],2) ^ _mul(a[1],3) ^ a[2] ^ a[3]
+            s[1][c] = a[0] ^ _mul(a[1],2) ^ _mul(a[2],3) ^ a[3]
+            s[2][c] = a[0] ^ a[1] ^ _mul(a[2],2) ^ _mul(a[3],3)
+            s[3][c] = _mul(a[0],3) ^ a[1] ^ a[2] ^ _mul(a[3],2)
         else:
-            return b + bytes([x])
-
-
-def _f(num, wire, payload):
-    t = _varint((num << 3) | wire)
-    if wire == 2:
-        return t + _varint(len(payload)) + payload
-    return t + payload
-
-
-def _pb(buf):
-    out = []
-    i = 0
-    n = len(buf)
-    while i < n:
-        b = buf[i]; fn, wt = b >> 3, b & 7; i += 1
-        if wt == 0:
-            v = 0; sh = 0
-            while i < n:
-                x = buf[i]; i += 1
-                v |= (x & 0x7f) << sh; sh += 7
-                if not x & 0x80:
-                    break
-            out.append((fn, wt, v))
-        elif wt == 2:
-            ln = 0; sh = 0
-            while i < n:
-                x = buf[i]; i += 1
-                ln |= (x & 0x7f) << sh; sh += 7
-                if not x & 0x80:
-                    break
-            out.append((fn, wt, buf[i:i + ln])); i += ln
-        elif wt == 5:
-            out.append((fn, wt, buf[i:i + 4])); i += 4
-        elif wt == 1:
-            out.append((fn, wt, buf[i:i + 8])); i += 8
-        else:
-            i += 1
+            s[0][c] = _mul(a[0],14) ^ _mul(a[1],11) ^ _mul(a[2],13) ^ _mul(a[3],9)
+            s[1][c] = _mul(a[0],9) ^ _mul(a[1],14) ^ _mul(a[2],11) ^ _mul(a[3],13)
+            s[2][c] = _mul(a[0],13) ^ _mul(a[1],9) ^ _mul(a[2],14) ^ _mul(a[3],11)
+            s[3][c] = _mul(a[0],11) ^ _mul(a[1],13) ^ _mul(a[2],9) ^ _mul(a[3],14)
+def _blk(b, w, dec=False):
+    s = [[b[r + 4*c] for c in range(4)] for r in range(4)]
+    nr = len(w) // 4 - 1
+    def add(n):
+        for r in range(4):
+            for c in range(4): s[r][c] ^= w[n * 4 + c][r]
+    if not dec:
+        add(0)
+        for n in range(1, nr): _sbx(s); _sr(s); _mc(s); add(n)
+        _sbx(s); _sr(s); add(nr)
+    else:
+        add(nr)
+        for n in range(nr - 1, 0, -1): _sr(s, True); _sbx(s, True); add(n); _mc(s, True)
+        _sr(s, True); _sbx(s, True); add(0)
+    return bytes(s[r][c] for c in range(4) for r in range(4))
+def aes_ecb(key, data, mode=1, strip=True):
+    w = _ke(key); out = b''
+    if mode:
+        pad = 16 - len(data) % 16; data += bytes([pad]) * pad
+        for i in range(0, len(data), 16): out += _blk(data[i:i+16], w)
+    else:
+        for i in range(0, len(data), 16): out += _blk(data[i:i+16], w, True)
+        if strip and out and 0 < out[-1] <= 16: out = out[:-out[-1]]
     return out
-
-
-def _rnd(k):
-    CH = string.ascii_letters + string.digits
-    return ''.join(random.sample(list(CH), k - 1)) + '='
-
-
-class Spider(_Base):
-    HOST_NAME = '橘汁视频'
-
-    def getName(self):
-        return '橘汁视频'
-
-    _cur_id = ''
-
-    def init(self, extend=''):
-        self.udid = hashlib.md5(str(time.time()).encode()).hexdigest()[:16].upper()
-        self._rsa1 = PKCS1_v1_5.new(RSA.import_key(base64.b64decode(PUB1_B64)))
-        self._rsa2 = None
-        self._token = ''
-        self._login()
-        self._zone()
-
-    def _http(self, url, data=None, headers=None):
-        req = urllib.request.Request(url, data=data, headers=headers or {})
-        import ssl
-        ctx = ssl._create_unverified_context()
-        return urllib.request.urlopen(req, timeout=25, context=ctx).read()
-
-    def _login(self):
+def _vi(n):
+    o = bytearray()
+    while True:
+        b = n&127; n >>= 7
+        if n: o.append(b|128)
+        else: o.append(b); break
+    return bytes(o)
+def _ld(f,s): return _vi(f*8+2)+_vi(len(s))+s
+def _vint(f,n): return _vi(f*8)+_vi(n)
+def _pd(b):
+    o=[]; i=0
+    while i < len(b):
+        v=0; s=0
+        while 1:
+            x=b[i]; i+=1; v|=(x&127)<<s; s+=7
+            if not x&128: break
+        f=v>>3; w=v&7
+        if w==0:
+            z=0; s=0
+            while 1:
+                x=b[i]; i+=1; z|=(x&127)<<s; s+=7
+                if not x&128: break
+            o.append((f,z))
+        elif w==2:
+            ln=0; s=0
+            while 1:
+                x=b[i]; i+=1; ln|=(x&127)<<s; s+=7
+                if not x&128: break
+            o.append((f,b[i:i+ln])); i+=ln
+        else: break
+    return o
+class Spider(Spider):
+    def init(self,extend=''):
+        self.base = HOSTS[0].rstrip('/')
+        self.ua = UA
+        self.types = dict(CATS)
+        self.filters = {}
+        self._n = None; self._e = None; self._t0 = 0
+        self._sm = {}
+        self._lock = threading.Lock()
         try:
-            body = json.dumps({'username': 'tv_%s' % self.udid[:10].lower(),
-                               'password': hashlib.md5(('tv' + self.udid).encode()).hexdigest(),
-                               'udid': self.udid}).encode()
+            threading.Thread(target=self._refresh,daemon=True).start()
+        except Exception:
+            pass
+    def _refresh(self):
+        for u in TXT_URLS:
             try:
-                self._http(HOST + '/api/ex/v3/user/register', body, {
-                    'User-Agent': UA, 'Content-Type': 'application/json'})
+                r = requests.get(u,timeout=4)
+                d = r.json()
+                if d.get('enabled'):
+                    self.base = d['domain'].rstrip('/')
+                    break
             except Exception:
                 pass
-            d = self._http(HOST + '/api/ex/v3/user/login', body, {
-                'User-Agent': UA, 'Content-Type': 'application/json'})
-            data = json.loads(d).get('data') or {}
-            self._token = (data.get('token') or (data.get('user') or {}).get('token') or '')
-        except Exception:
-            self._token = ''
-
-    def _zone(self):
-        ts = int(time.time() * 1000)
-        rnd = _rnd(16)
-        sign = base64.b64encode(self._rsa1.encrypt((str(ts) + rnd).encode())).decode()
-        body = (_f(1, 0, _varint(ts)) + _f(2, 2, sign.encode()) +
-                _f(3, 2, rnd.encode()) + _f(4, 2, rnd.encode()) + _f(5, 2, rnd.encode()))
-        P = {'plat': 'android', 'vOs': '16', '_vOsCode': '36', 'vApp': VC,
-             'vName': '3.0.2.4', 'pkg': PKG,
-             'appName': '%E6%A9%98%E6%B1%81',
-             'udid': self.udid, 'uuid': self.udid, 'chid': '10000',
-             'androidID': self.udid, 'net': '1', 'young': 0, 'tenantId': '*',
-             'v': 1, 'device': 0, 'lang': 'zh', 'country': 'CN', 'cpu': 'arm64-v8a'}
-        d = self._http(HOST + '/api/v5/find/app/zone', body, {
-            'User-Agent': UA, 'Content-Type': 'application/x-protobuf',
-            'Accept': 'application/x-protobuf', 'Cache-Control': 'no-cache',
-            'publicParams': json.dumps(P, separators=(',', ':'))})
-        top = _pb(d)
-        inner = [v for fn, wt, v in top if fn == 3 and wt == 2][0]
-        strs = {fn: v for fn, wt, v in _pb(inner) if wt == 2}
-        self._rsa2 = PKCS1_v1_5.new(RSA.import_key(base64.b64decode(
-            strs[2] + strs[3] + strs[4] + strs[5])))
-
-    def _hdr(self):
-        ts = int(time.time() * 1000)
-        rnd = _rnd(16)
-        sig = base64.b64encode(self._rsa2.encrypt((str(ts) + rnd + VC).encode())).decode()
-        ao = base64.b64encode(AES.new(SAFE, AES.MODE_ECB).encrypt(
-            pad((str(ts) + rnd).encode(), 16))).decode()
-        J = {'country': 'CN', 'vName': '3.0.2.4', 'cpuId': '', 'young': 0,
-             'facturer': 'OnePlus', 'pkg': PKG, 'uuid': self.udid,
-             'resolution': '1080x2256', 'mac': '02%3A00%3A00%3A00%3A00%3A00',
-             'sig': sig, 'abid': '7470', 'model': 'PJX110', 'plat': 'android',
-             'udid': self.udid, 'dpi': '480', 'net': '1', 'lang': 'zh',
-             'random_str': rnd, 'brand': 'OnePlus', 'timestamp': ts,
-             'density': '3.0', 'appName': '%E6%A9%98%E6%B1%81',
-             'cpu': 'arm64-v8a', 'chid': '10000', 'carrier': '%E8%81%94%E9%80%9A',
-             'sig2': ao[:8], 'v': 1, 'sig3': ao[8:], 'tenantId': '*',
-             '_vOsCode': '36', 'vOs': '16', 'vApp': VC, 'device': 0,
-             'androidID': self.udid}
-        blob = json.dumps(J, separators=(',', ':'), ensure_ascii=False).encode()
-        pd_hex = AES.new(NATIVE_K, AES.MODE_CBC, NATIVE_K).encrypt(pad(blob, 16)).hex()
-        h = {'User-Agent': UA, 'Accept': 'application/json',
-             'Cache-Control': 'no-cache',
-             'publicParams': json.dumps({'paramsData': pd_hex}, separators=(',', ':'))}
-        if self._token:
-            h['token'] = self._token
-        return h
-
-    def _secure(self, mapkv):
-        ts = int(time.time() * 1000)
-        rnd8 = _rnd(8)
-        plain = (mapkv + str(ts)).encode()
-        ct = AES.new(SAFECODE.encode(), AES.MODE_ECB).encrypt(pad(plain, 16))
-        b64 = base64.b64encode(ct).decode()
-        return (_f(1, 2, (rnd8 + b64[:12]).encode()) +
-                _f(2, 2, b64[12:].encode()) +
-                _f(3, 2, _rnd(20).encode()) + _f(4, 0, _varint(ts)) +
-                _f(5, 2, rnd8.encode()))
-
-    def homeContent(self, f):
-        cats = []
-        try:
-            d = self._http(HOST + '/api/v3/drama/getCategory?orderBy=type_id',
-                           None, {'User-Agent': UA, 'Accept': 'application/json'})
-            for c in (json.loads(d).get('data') or []):
-                if str(c.get('id')) != '29':
-                    cats.append({'type_id': str(c['id']),
-                                 'type_name': c.get('name', '')})
-        except Exception:
-            pass
-        if not cats:
-            cats = [{'type_id': '21', 'type_name': '电影'},
-                    {'type_id': '22', 'type_name': '剧集'},
-                    {'type_id': '25', 'type_name': '动漫'},
-                    {'type_id': '26', 'type_name': '综艺'},
-                    {'type_id': '27', 'type_name': '短剧'},
-                    {'type_id': '28', 'type_name': '漫剧'}]
-        cats.append({'type_id': 'history', 'type_name': '最近在看'})
-        return {'class': cats}
-
+    def _rnd(self,n):
+        cs = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        o = ''; u = set()
+        while len(o) < n-1:
+            c = random.choice(cs)
+            if c not in u: o += c; u.add(c)
+        return o + '='
+    def _rsa_pkcs1(self,n,e,m):
+        k = (n.bit_length()+7)//8
+        if len(m) > k-11: raise ValueError('msg too long')
+        ps = b''
+        while len(ps) < k-len(m)-3:
+            ps += bytes([random.randrange(1,256)])
+        em = b'\x00\x02'+ps+b'\x00'+m
+        return pow(int.from_bytes(em,'big'),e,n).to_bytes(k,'big')
+    def _pub_ne(self,b64s):
+        d = base64.b64decode(b64s)
+        ni = d.rfind(b'\x02\x81\x81')
+        n = int.from_bytes(d[ni+4:ni+132],'big')
+        return n, 65537
+    def _sig1(self,m): return base64.b64encode(self._rsa_pkcs1(PUB1_N,PUB1_E,m)).decode()
+    def _hd(self,ts,r16,withsig=True):
+        p = {'plat':'tv','vOs':'11','vApp':VAPP,'vName':'3.0.2.3','pkg':'com.exxammpea.a1','appName':'橘汁TV',
+             'udid':'a'*32,'uuid':'a'*32,'androidID':'a'*16,'chid':'10000','test_timestamp':int(ts),'young':0,
+             'timestamp':int(ts),'random_str':r16}
+        if withsig and self._n:
+            p['sig'] = base64.b64encode(self._rsa_pkcs1(self._n,self._e,(ts+r16+VAPP).encode())).decode()
+            z = base64.b64encode(aes_ecb(SAFESECRET.encode(),(ts+r16).encode())).decode()
+            p['sig2'] = z[:8]; p['sig3'] = z[8:]
+        return {'publicParams':json.dumps(p,separators=(',',':')),'Content-Type':'application/x-protobuf','User-Agent':self.ua,'Accept':'application/x-protobuf'}
+    def _hs(self):
+        with self._lock:
+            self._n = None
+            t = str(int(time.time()*1000)); r = self._rnd(16)
+            body = _vint(1,int(t)) + _ld(2,self._sig1((t+r).encode()).encode()) + _ld(3,self._rnd(16).encode()) + _ld(4,r.encode()) + _ld(5,self._rnd(16).encode())
+            try:
+                rq = requests.post(self.base+'/api/v5/find/app/zone',data=body,headers=self._hd(t,r,False),timeout=6)
+            except Exception:
+                return False
+            if rq.status_code != 200: return False
+            fields = _pd(rq.content)
+            data = next((v for f,v in fields if f==3 and isinstance(v,bytes)),b'')
+            if not data: return False
+            ss = {}
+            for f,v in _pd(data):
+                if isinstance(v,bytes): ss[f]=v.decode()
+            if len(ss) < 5: return False
+            try:
+                self._n,self._e = self._pub_ne(ss[1]+ss[2]+ss[4]+ss[5])
+                self._t0 = time.time()
+                return True
+            except Exception:
+                return False
+    def _call(self,path,par):
+        for _ in range(2):
+            if not self._n or time.time()-self._t0 > 3600:
+                if not self._hs(): return None
+            try:
+                t = str(int(time.time()*1000)); r16 = self._rnd(16); r8 = self._rnd(8); fake = self._rnd(20)
+                plain = par + t
+                enc = base64.b64encode(aes_ecb(SAFE32.encode(),plain.encode())).decode()
+                s3 = r8 + enc
+                body = _ld(1,s3[:20].encode())+_ld(2,s3[20:].encode())+_ld(3,fake.encode())+_vint(4,int(t))+_ld(5,r8.encode())
+                rq = requests.post(self.base+path,data=body,headers=self._hd(t,r16),timeout=4)
+            except Exception:
+                self._n = None; continue
+            if rq.status_code == 424:
+                self._n = None; continue
+            if rq.status_code != 200: return None
+            return _pd(rq.content)
+        return None
+    def _dr(self,flds,fn):
+        for f,v in flds:
+            if f==fn and isinstance(v,bytes): return v.decode('utf-8','replace')
+        return ''
+    def _di(self,flds,fn):
+        for f,v in flds:
+            if f==fn and isinstance(v,int): return v
+        return 0
+    def _cover(self,cv):
+        for f,v in _pd(cv or b''):
+            if f==2 and isinstance(v,bytes): return v.decode('utf-8','replace')
+        return ''
+    def _list_items(self,ar):
+        data = next((v for f,v in ar if f==3 and isinstance(v,bytes)),b'') if ar else b''
+        out = []
+        for f,v in _pd(data):
+            if f==1 and isinstance(v,bytes):
+                d = _pd(v)
+                out.append({'vod_id':str(self._di(d,3)),'vod_name':self._dr(d,5),'vod_pic':self._cover(next((w for g,w in d if g==2),None)),
+                            'vod_remarks':self._dr(d,13) or (str(self._di(d,14)) if self._di(d,14) else '')})
+        return out
+    def homeContent(self,filter=False):
+        r = {'class':[{'type_id':k,'type_name':v} for k,v in self.types.items()]}
+        if filter: r['filters'] = {}
+        r['list'] = self.homeVideoContent().get('list',[])
+        return r
     def homeVideoContent(self):
-        return {'list': self._list('page=1&pagesize=24')}
-
-    def _vodids(self):
         try:
-            d = self._http(HOST + '/api/ex/v3/security/tag/list', None, self._hdr())
-            tags = json.loads(d).get('data') or []
-            ids = []
-            for t in tags:
-                for sec in (t.get('sections') or []):
-                    for v in (sec.get('vodList') or []):
-                        ids.append(str(v.get('id')))
-            return ','.join(ids[:6])
+            t = str(int(time.time()*1000)); r16 = self._rnd(16)
+            if not self._n or time.time()-self._t0 > 3600:
+                if not self._hs(): return {'list':[]}
+            hd = dict(self._hd(t,r16),Accept='application/json')
+            rq = requests.get(self.base+'/api/ex/v3/security/tag/list',headers=hd,timeout=6)
+            if rq.status_code != 200: return {'list':[]}
+            enc = rq.json().get('data','')
+            if not enc: return {'list':[]}
+            b1 = base64.b64decode(enc)
+            m1 = aes_ecb(SAFE32.encode(),b1,0)
+            b2 = base64.b64decode(m1)
+            m2 = aes_ecb(SAFESECRET.encode(),b2,0)
+            j = json.loads(m2)
+            items = []
+            def walk(o):
+                if isinstance(o,dict):
+                    vs = o.get('vodList')
+                    if isinstance(vs,list):
+                        for v in vs:
+                            if not isinstance(v,dict): continue
+                            cimg = v.get('coverImage') or {}
+                            items.append({'vod_id':str(v.get('id','')),'vod_name':v.get('name',''),
+                                          'vod_pic':cimg.get('path','') if isinstance(cimg,dict) else (v.get('pic') or ''),
+                                          'vod_remarks':v.get('remark','') or (v.get('episodeText') or '')})
+                    if isinstance(o.get('carousels'),list):
+                        for c in o['carousels']:
+                            if isinstance(c,dict) and str(c.get('link','')).startswith('/navigate/video?id='):
+                                items.append({'vod_id':str(c['link']).rsplit('=',1)[-1],'vod_name':c.get('title',''),
+                                              'vod_pic':c.get('cover','') or c.get('picLink',''),'vod_remarks':''})
+                    for v in o.values(): walk(v)
+                elif isinstance(o,list):
+                    for v in o: walk(v)
+            walk(j)
+            seen = set(); uniq = []
+            for it in items:
+                if it['vod_id'] and it['vod_id'] not in seen:
+                    seen.add(it['vod_id']); uniq.append(it)
+                    if len(uniq) >= 80: break
+            return {'list':uniq}
         except Exception:
-            return ''
-
-    def _list(self, qs):
-        out = []
-        try:
-            hh = self._hdr()
-            hh['Content-Type'] = 'application/x-protobuf'
-            hh['Accept'] = 'application/x-protobuf'
-            d = self._http(HOST + '/api/proto/v5/drama/category',
-                           self._secure(qs), hh)
-            top = _pb(d)
-            code = [v for fn, wt, v in top if fn == 1 and wt == 0]
-            if (code[0] if code else 0) != 200:
-                return out
-            data = [v for fn, wt, v in top if fn == 3 and wt == 2][0]
-            for fn, wt, v in _pb(data):
-                if fn != 1 or wt != 2:
-                    continue
-                info = {'vod_id': '', 'vod_name': '', 'vod_pic': '', 'vod_remarks': ''}
-                for f2, w2, v2 in _pb(v):
-                    if f2 == 3 and w2 == 0:
-                        info['vod_id'] = str(v2)
-                    elif f2 == 5 and w2 == 2:
-                        info['vod_name'] = v2.decode('utf-8', 'replace')
-                    elif f2 == 2 and w2 == 2:
-                        cands = [v3.decode('utf-8', 'replace')
-                                 for f3, w3, v3 in _pb(v2)
-                                 if w3 == 2 and v3.startswith(b'http')]
-                        if cands:
-                            info['vod_pic'] = next(
-                                (u for u in cands if u.startswith('https')),
-                                cands[0])
-                    elif f2 == 13 and w2 == 2:
-                        info['vod_remarks'] = v2.decode('utf-8', 'replace')
-                if info['vod_id']:
-                    out.append(info)
-        except Exception:
-            pass
-        return out
-
-    def categoryContent(self, tid, pg, f, ext):
-        pg = int(pg or 1)
-        if tid == 'history':
-            return {'list': self._history_list(), 'page': 1,
-                    'pagecount': 1, 'limit': 40, 'total': 40}
-        qs = 'page=%d&pagesize=24&typeId1=%s' % (pg, tid)
-        return {'list': self._list(qs), 'page': pg,
-                'pagecount': 999, 'limit': 24, 'total': 99999}
-
-    def _history_list(self):
-        out = []
-        try:
-            d = self._http(HOST + '/api/ex/v3/user/history?username=fzcrym',
-                           None, {'User-Agent': UA, 'Accept': 'application/json'})
-            for it in (json.loads(d).get('data') or []):
-                vid = it.get('videoId', '')
-                if '|' in vid:
-                    frm, url = vid.split('|', 1)
-                    out.append({
-                        'vod_id': 'h$%s$%s' % (frm, url),
-                        'vod_name': it.get('videoName', ''),
-                        'vod_pic': it.get('videoCover', ''),
-                        'vod_remarks': '%s·第%s集' % (frm, it.get('videoPart', '')),
-                    })
-        except Exception:
-            pass
-        return out
-
-    def detailContent(self, ids):
-        out = {'vod_id': ids[0]}
-        self._cur_id = ids[0]
-        if ids[0].startswith('h$'):
-            _, frm, url = ids[0].split('$', 2)
-            return {'list': [dict(out, vod_name='继续观看',
-                                   vod_play_from=frm,
-                                   vod_play_url='正片$%s' % url,
-                                   vod_pic='',
-                                   vod_content='播放历史·线路:' + frm)]}
-        try:
-            hh = self._hdr()
-            hh['Content-Type'] = 'application/x-protobuf'
-            hh['Accept'] = 'application/x-protobuf'
-            d = self._http(HOST + '/api/proto/v5/drama/getDetail',
-                           self._secure('id=' + ids[0]), hh)
-            top = _pb(d)
-            data = [v for fn, wt, v in top if fn == 3 and wt == 2][0]
-            dd = _pb(data)
-            for fn, wt, v in dd:
-                if fn == 0 or fn > 100:
-                    break  # protobuf 错位起点, 之后全是字符串碎片(乱码源)
-                if fn == 9 and wt == 2 and 'vod_name' not in out:
-                    out['vod_name'] = v.decode('utf-8', 'replace')
-                elif fn == 1 and wt == 2 and 'vod_area' not in out:
-                    out['vod_area'] = v.decode('utf-8', 'replace')
-                elif fn == 12 and wt == 2 and 'vod_director' not in out:
-                    out['vod_director'] = v.decode('utf-8', 'replace')
-                elif fn == 16 and wt == 2 and 'vod_actor' not in out:
-                    out['vod_actor'] = v.decode('utf-8', 'replace').lstrip(' ,')
-                elif fn == 25 and wt == 2 and 'vod_actor' not in out:
-                    out['vod_actor'] = v.decode('utf-8', 'replace')
-                elif fn == 6 and wt == 2 and 'vod_content' not in out:
-                    out['vod_content'] = re.sub(
-                        r'<[^>]+>', '', v.decode('utf-8', 'replace'))
-                elif fn == 2 and wt == 2 and 'vod_pic' not in out:
-                    cands = [v3.decode('utf-8', 'replace')
-                             for f3, w3, v3 in _pb(v)
-                             if w3 == 2 and v3.startswith(b'http')]
-                    if cands:
-                        out['vod_pic'] = next(
-                            (u for u in cands if u.startswith('https')),
-                            cands[0])
-            # 演员兜底: f16/f25 无值时从错位块的干净中文串提取
-            if 'vod_actor' not in out:
-                for fn, wt, v in dd:
-                    if fn == 0 and wt == 2:
-                        txt = v.decode('utf-8', 'replace')
-                        names = re.findall(
-                            r'[\u4e00-\u9fa5·]{2,12}(?::?,)'
-                            r'?[一-龥·]{2,12}', txt)
-                        cand = [x for x in names if len(x) >= 4]
-                        if cand:
-                            out['vod_actor'] = ','.join(cand[:6])
-                            break
-            # f29 分集: 详情响应 _pb 会错位, 用原始 0xEA01 tag 扫描
-            eps = []
-            pos = 0
-            n = len(data)
-            while True:
-                j = data.find(b'\xea\x01', pos)
-                if j < 0:
-                    break
-                k = j + 2
-                ln = 0
-                sh = 0
-                while k < n and data[k] & 0x80:
-                    ln |= (data[k] & 0x7f) << sh
-                    sh += 7
-                    k += 1
-                if k >= n:
-                    break
-                ln |= (data[k] & 0x7f) << sh
-                k += 1
-                if ln <= 0 or k + ln > n:
-                    pos = j + 1
-                    continue
-                entry = data[k:k + ln]
-                pos = k + ln
-                title = pth = src = src_cn = ''
-                for f3_, w3_, v3_ in _pb(entry):
-                    if w3_ != 2:
-                        continue
-                    if f3_ == 2:
-                        title = v3_.decode('utf-8', 'replace')
-                    elif f3_ == 3:
-                        title = v3_.decode('utf-8', 'replace')
-                    elif f3_ == 4:
-                        pth = v3_.decode('utf-8', 'replace')
-                    elif f3_ == 9:
-                        src = v3_.decode('utf-8', 'replace')
-                    elif f3_ == 10:
-                        src_cn = v3_.decode('utf-8', 'replace')
-                if not pth:
-                    continue
-                # 集名归一化: "第01集"/"第01集完结"→"1"
-                mm = re.match(r'^第?0*(\d{1,4})[集话期](?:完结)?$', title)
-                if mm:
-                    title = mm.group(1)
-                eps.append((title, pth, src, src_cn))
-            lines = {}
-            order = []
-            for title, pth, src, src_cn in eps:
-                line = src_cn or src or '正片'
-                if line not in lines:
-                    lines[line] = []
-                    order.append(line)
-                if re.match(r'(?i).*\.(mp4|m3u8|flv|mkv|avi|ts|mov|mpd|m4a|wmv)(\?.*)?$', pth):
-                    ep_url = pth
-                else:
-                    ep_url = base64.b64encode(json.dumps(
-                        {'vodPlayFrom': src, 'playUrl': pth},
-                        separators=(',', ':')).encode()).decode()
-                lines[line].append('%s$%s' % (title or '正片', ep_url))
-            # 集名归一化: "第01集"→"1", 纯数字保留, 其他保留原名
-            for ln_name in lines:
-                norm = []
-                for it in lines[ln_name]:
-                    t, u = it.split('$', 1)
-                    mm = re.match(r'^第?0*(\d{1,4})[集话期]$', t)
-                    norm.append('%s$%s' % (mm.group(1) if mm else t, u))
-                lines[ln_name] = norm
-            # 线路排序: 超高清最前, 蓝光按名, 其余殿后
-            def _rank(nm):
-                if '超高清' in nm:
-                    return 0
-                if '蓝光' in nm:
-                    return 1
-                return 2
-            order.sort(key=lambda x: (_rank(x), x))
-            out['_lines'] = order
-            out['_lines_map'] = lines
-            lines = out.pop('_lines', [])
-            lmap = out.pop('_lines_map', {})
-            if lines:
-                out['vod_play_from'] = '$$$'.join(lines)
-                out['vod_play_url'] = '$$$'.join(
-                    '#'.join(lmap[l]) for l in lines)
-            else:
-                out['vod_play_from'] = '橘汁'
-                out['vod_play_url'] = '暂无片源$http://'
-        except Exception:
-            out['vod_name'] = ids[0]
-            out['vod_play_from'] = '橘汁'
-            out['vod_play_url'] = '播放$http://'
-        return {'list': [out]}
-
-    def searchContent(self, key, quick, pg=1):
-        try:
-            hh = self._hdr()
-            hh['Content-Type'] = 'application/x-protobuf'
-            hh['Accept'] = 'application/x-protobuf'
-            qs = 'page=%s&pagesize=24&searchKeys=%s' % (pg or 1, key)
-            d = self._http(HOST + '/api/proto/v5/drama/search',
-                           self._secure(qs), hh)
-            top = _pb(d)
-            code = [v for fn, wt, v in top if fn == 1 and wt == 0]
-            if (code[0] if code else 0) != 200:
-                return {'list': [], 'page': int(pg or 1)}
-            datas = [v for fn, wt, v in top if fn == 3 and wt == 2]
-            if not datas:
-                return {'list': [], 'page': int(pg or 1)}
-            out = []
-            for fn, wt, v in _pb(datas[0]):
-                if wt != 2 or fn == 0 or fn > 100:
-                    continue
-                item = {'vod_id': '', 'vod_name': '', 'vod_pic': '',
-                        'vod_remarks': ''}
-                for f3, w3, v3 in _pb(v):
-                    if w3 != 2 and not (f3 == 3 and w3 == 0):
-                        continue
-                    try:
-                        if f3 == 3 and w3 == 0:
-                            item['vod_id'] = str(v3)
-                        elif f3 == 5:
-                            item['vod_name'] = v3.decode('utf-8', 'replace')
-                        elif f3 == 2:
-                            # 海报 b64串: 取内部http
-                            cands = [x.decode('utf-8', 'replace')
-                                     for _, w4, x in _pb(v3)
-                                     if w4 == 2 and x.startswith(b'http')]
-                            if cands:
-                                item['vod_pic'] = next(
-                                    (u for u in cands if u.startswith('https')),
-                                    cands[0])
-                        elif f3 == 13:
-                            item['vod_remarks'] = v3.decode('utf-8', 'replace')
-                        elif f3 == 4:
-                            item['vod_content'] = v3.decode(
-                                'utf-8', 'replace')[:100]
-                    except Exception:
-                        pass
-                if item['vod_id'] and item['vod_name']:
-                    out.append(item)
-            return {'list': out, 'page': int(pg or 1)}
-        except Exception:
-            return {'list': [], 'page': 1}
-
-    def playerContent(self, flag, id, vipFlags):
-        url = id
-        try:
-            if id and not id.startswith('http') and not id.startswith('h$'):
-                jm = json.loads(base64.b64decode(id))
-                pf, pu = jm.get('vodPlayFrom', ''), jm.get('playUrl', '')
-                hh = self._hdr()
-                hh['Content-Type'] = 'application/x-protobuf'
-                hh['Accept'] = 'application/x-protobuf'
-                qs = 'vodPlayFrom=%s&playUrl=%s' % (
-                    urllib.parse.quote(pf), urllib.parse.quote(pu, safe=''))
-                d = self._http(HOST + '/api/proto/v5/videoUsableUrl',
-                               self._secure(qs), hh)
-                top = _pb(d)
-                code = [v for fn, wt, v in top if fn == 1 and wt == 0]
-                if (code[0] if code else 0) == 200:
-                    data = [v for fn, wt, v in top if fn == 3 and wt == 2]
-                    if data:
-                        mm = re.search(rb'https?://[\x21-\x7e]+',
-                                       data[0])
-                        if mm:
-                            url = mm.group(0).decode(
-                                'utf-8', 'replace')
-            elif not url.startswith('http'):
-                url = 'http://'
-        except Exception:
-            pass
-        return {'parse': 0, 'playUrl': '', 'url': url,
-                'header': {'User-Agent': UA}}
-
-    def isVideoFormat(self, url):
-        return True
-
-    def isTextFormat(self, url):
-        return False
-
-    def destroy(self):
-        pass
+            return {'list':[]}
+    def categoryContent(self,tid,pg=1,filter=False,extend=''):
+        try: pn = max(int(str(pg)),1)
+        except Exception: pn = 1
+        cid = str(tid).split('|')[0]
+        tidn = TID.get(cid,'20')
+        ar = self._call('/api/proto/v5/drama/category','typeId1=%d&page=%d&pagesize=20'%(tidn,pn))
+        items = self._list_items(ar) if ar else []
+        return {'page':pn,'pagecount':100,'limit':20,'total':len(items),'list':items}
+    def detailContent(self,ids,quick='1'):
+        vid = str(ids[0] if isinstance(ids,list) else ids or '')
+        m = re.search(r'(\d+)',vid); vid = m.group(1) if m else ''
+        if not vid: return {'list':[]}
+        ar = self._call('/api/proto/v5/drama/getDetail','id='+vid)
+        if not ar: return {'list':[]}
+        data = next((v for f,v in ar if f==3 and isinstance(v,bytes)),b'')
+        d = _pd(data)
+        name = self._dr(d,9) or vid
+        pic = self._cover(next((w for g,w in d if g==2),None))
+        year = self._di(d,18); year = str(year) if year else ''
+        dct = {'vod_id':vid,'vod_name':name,'vod_pic':pic,'vod_year':year,
+               'vod_area':self._dr(d,1),'vod_class':self._dr(d,13),'vod_director':self._dr(d,12),
+               'vod_actor':self._dr(d,25),'vod_content':self._dr(d,7) or self._dr(d,6),
+               'vod_remarks':self._dr(d,26),'vod_play_from':'','vod_play_url':''}
+        grp = {}
+        order = []
+        for f,v in d:
+            if f==29 and isinstance(v,bytes):
+                vd = _pd(v)
+                src = self._dr(vd,9); scn = self._dr(vd,10) or src
+                ep = self._di(vd,13); title = self._dr(vd,2) or str(ep)
+                path = self._dr(vd,4)
+                if not path: continue
+                if src not in grp:
+                    grp[src] = {'scn':scn,'eps':{}}; order.append(src)
+                if ep not in grp[src]['eps']:
+                    grp[src]['eps'][ep] = title.replace('#','-').replace('$','|')+'$'+path
+        if order:
+            keep = [o for o in order if o=='KZNB']+[o for o in order if o!='KZNB']
+            shown = []; used = set()
+            for o in keep:
+                n = grp[o].get('scn') or o
+                if n in used: n = o
+                used.add(n); self._sm[n] = o; shown.append(n)
+            dct['vod_play_from'] = '$$$'.join(shown)
+            dct['vod_play_url'] = '$$$'.join('#'.join(grp[o]['eps'][k] for k in sorted(grp[o]['eps'].keys())) for o in keep)
+        return {'list':[dct]}
+    def searchContent(self,key,quick=False,pg='1'):
+        try: pn = max(int(str(pg)),1)
+        except Exception: pn = 1
+        ar = self._call('/api/proto/v5/drama/search','searchKeys=%s&page=%d&pagesize=20'%(key,pn))
+        return {'list':self._list_items(ar) if ar else [],'page':pn}
+    def _url1(self,src,path):
+        if not self._n or time.time()-self._t0 > 3600:
+            self._hs()
+        ar = self._call('/api/proto/v5/videoUsableUrl','vodPlayFrom=%s&playUrl=%s'%(quote(src),quote(path)))
+        if not ar: return ''
+        data = next((v for f,v in ar if f==3 and isinstance(v,bytes)),b'')
+        u = ''
+        for f,v in _pd(data):
+            if f==1 and isinstance(v,bytes): u = v.decode('utf-8','replace')
+        return u
+    def _web(self,u):
+        l = (u or '').lower().split('?',1)[0]
+        return l.endswith('.html') or l.endswith('.htm') or ('/cover/' in l and '.qq.com' in l) or ('/v_show/' in l and '.youku.com' in l)
+    def playerContent(self,flag,id,vipFlags=None):
+        src = self._sm.get(str(flag), str(flag)); path = str(id)
+        if '://' in path and self._web(path):
+            u = self._url1(src,path)
+            if u and not self._web(u) and u.startswith('http'):
+                return {'parse':0,'url':u}
+            return {'parse':1,'url':path}
+        u = self._url1(src,path) if src else ''
+        if not u and '://' in path:
+            return {'parse':0,'url':path}
+        if not u: return {'parse':0,'url':''}
+        if not u.startswith('http'):
+            return {'parse':1,'url':u}
+        if 'zy.m3u8' in u or '/zb/' in u:
+            try:
+                r = requests.get(u,headers={'User-Agent':self.ua},timeout=5,allow_redirects=False)
+                if r.status_code in (301,302,303,307):
+                    loc = r.headers.get('Location','')
+                    if loc.startswith('http'): u = loc
+            except Exception:
+                pass
+        return {'parse':0,'url':u}
