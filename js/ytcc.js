@@ -2,8 +2,8 @@ const cat = typeof js2Proxy === 'function' && typeof desX === 'function' && type
 const C = {
     host: 'http://cms.lyyytv.cn',
     parseMap: {
-        'lyyytv.cn': 'http://fys.lyyytv.cn/api/index?parsesId=3&appid=10001&videoUrl=',
-        '*': 'http://fys.lyyytv.cn/api/index?parsesId=3&appid=10001&videoUrl='
+        'lyyytv.cn': 'http://4kzj.lyyytv.cn/api/index?parsesId=11&appid=10001&videoUrl=',
+        '*': 'http://4kzj.lyyytv.cn/api/index?parsesId=11&appid=10001&videoUrl='
     },
     token: '',
     key: '',
