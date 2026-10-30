@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# 影探4K：由 影探4k.js 移植到鱼壳 webhtv 站点注入使用的 Python Spider。
-# 用法：把本文件放到手机 /sdcard/py/影探4K.py，站点配置 api 填 file:///sdcard/py/影探4K.py
+
 import base64
 import json
 import re
@@ -22,8 +21,8 @@ KEY = 'yingtan4k'
 HOST = 'http://cms.lyyytv.cn'
 CMS_KEY = 'wP5bvxoc3yv7FoBQENFZuAF0EUYr4LTy'
 
-# 解析接口（对齐 yt4k.js：fys.lyyytv.cn / parsesId=3）
-PARSE_API = 'http://fys.lyyytv.cn/api/index?parsesId=3&appid=10001&videoUrl='
+# 解析接口（对齐 yt4k.js：4kzj.lyyytv.cn / parsesId=3）
+PARSE_API = 'http://4kzj.lyyytv.cn/api/index?parsesId=11&appid=10001&videoUrl='
 HEADERS = {'User-Agent': 'okhttp/4.12.0'}
 # 解析请求/回源头：对齐 JS 的 PH，避免 gzip 花屏
 PARSE_HEADERS = {'User-Agent': 'okhttp/4.12.0', 'Accept-Encoding': 'identity'}
