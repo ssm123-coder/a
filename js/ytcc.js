@@ -28,6 +28,20 @@ function parseExt(s) {
     if (typeof s === 'object') return s;
     try { return JSON.parse(s); } catch (e) { return {}; }
 }
+function isVarietyRaw(rawItem) {
+    if (!rawItem) return true;
+    const cls = String(rawItem.vod_class || '');
+    const name = String(rawItem.vod_name || '');
+    const classKw = ['综艺','国综','真人秀','晚会','脱口秀'];
+    for(let w of classKw){
+        if(cls.includes(w)) return true;
+    }
+    const nameKw = ['综艺','国综','真人秀','晚会','脱口秀','盛典'];
+    for(let w of nameKw){
+        if(name.includes(w)) return true;
+    }
+    return false;
+}
 function mapItem(it) {
     const v = {};
     v.vod_id = String(it.vod_id != null ? it.vod_id : '');
@@ -36,6 +50,7 @@ function mapItem(it) {
     let remark = String(it.vod_remarks || '');
     remark = remark.replace(/4K|蓝光|更新|高清/g, '').replace(/[★◆☆※#$■●]/g, '').replace(/\s+/g, ' ').trim();
     v.vod_remarks = remark;
+    v.vod_class = it.vod_class || '';
     return v;
 }
 function splitEpisodeList(playStr) {
@@ -310,8 +325,10 @@ async function homeVod() {
                     const it = c.vlist[k];
                     const id = String(it.vod_id != null ? it.vod_id : '');
                     if (id && seen[id]) continue;
+                    if(isVarietyRaw(it)) continue;
+                    const mapped = mapItem(it);
                     if (id) seen[id] = 1;
-                    list.push(mapItem(it));
+                    list.push(mapped);
                 }
             }
         }
@@ -334,7 +351,12 @@ async function category(tid, pg, filter, extend) {
     const j = await getApi('/api.php/app/video', params);
     if (j && Array.isArray(j.list)) {
         const list = [];
-        for (let i = 0; i < j.list.length; i++) list.push(mapItem(j.list[i]));
+        for (let i = 0; i < j.list.length; i++){
+            const rawIt = j.list[i];
+            if(isVarietyRaw(rawIt)) continue;
+            const mi = mapItem(rawIt);
+            list.push(mi);
+        }
         let pagecount = parseInt(j.pagecount) || 0;
         if (!pagecount) pagecount = list.length >= C.size ? pg + 1 : pg;
         return JSON.stringify({ list: list, page: pg, pagecount: pagecount });
@@ -346,7 +368,12 @@ async function search(wd, quick, pg = 1) {
     const j = await getApi('/api.php/app/search', { text: wd, pg: String(pg) });
     const list = [];
     if (j && Array.isArray(j.list)) {
-        for (let i = 0; i < j.list.length; i++) list.push(mapItem(j.list[i]));
+        for (let i = 0; i < j.list.length; i++){
+            const rawIt = j.list[i];
+            if(isVarietyRaw(rawIt)) continue;
+            const mi = mapItem(rawIt);
+            list.push(mi);
+        }
     }
     const pagecount = list.length >= C.searchSize ? pg + 1 : pg;
     return JSON.stringify({ list: list, page: pg, pagecount: pagecount });
@@ -356,6 +383,22 @@ async function detail(id) {
     const list = [];
     if (j && j.data) {
         const d = j.data;
+        const clsDetail = String(d.vod_class||'');
+        const nameDetail = String(d.vod_name||'');
+        const classKw = ['综艺','国综','真人秀','晚会','脱口秀'];
+        let isVar = false;
+        for(let w of classKw){
+            if(clsDetail.includes(w)){isVar=true;break;}
+        }
+        if(!isVar){
+            const nameKw = ['综艺','国综','真人秀','晚会','脱口秀','盛典'];
+            for(let w of nameKw){
+                if(nameDetail.includes(w)){isVar=true;break;}
+            }
+        }
+        if(isVar){
+            return JSON.stringify({ list: [] });
+        }
         const vod = {};
         vod.vod_id = String(d.vod_id != null ? d.vod_id : id);
         vod.vod_name = String(d.vod_name || '').trim();
