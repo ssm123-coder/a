@@ -222,7 +222,7 @@ class Spider(BaseSpider):
             "facturer": "Xiaomi", "pkg": self.cfg.get("pkg", ""), "uuid": uid,
             "resolution": "1080x2272", "mac": "02%3A00%3A00%3A00%3A00%3A00", "abid": "397",
             "model": "M2012K11AC", "plat": "android", "udid": uid, "dpi": "440", "net": "1",
-            "lang": "zh", "brand": "Xiaomi", "density": "2.75", "appName": self.cfg.get("appName", "橘汁"),
+            "lang": "zh", "brand": "Xiaomi", "density": "2.75", "appName": self.cfg.get("appName", "河豚"),
             "cpu": "arm64-v8a", "chid": "10000", "carrier": "%E8%81%94%E9%80%9A",
             "_vOsCode": 30, "vOs": "11", "v": 1, "tenantId": "",
             "vApp": self.version.replace(".", ""), "device": 0, "androidID": uid.lower()[:16]
