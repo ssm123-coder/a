@@ -1,9 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-网盘聚合.py — 17 站聚合版
+网盘聚合.py — 17 站聚合版（结构参照 短剧聚合.py）
 
 胶囊行 = 玩偶/木偶/多多/欧歌/二小/虎斑/快映/花卷/夸父/123/卡卡/即刻/指南/双星/爱盼/觅盘/趣盘
+点胶囊切换站点看分类/海报；搜索一次搜全部站，结果角标带站名；
+UC 解析共用一份；UC 播放只走无限免登匿名直链（与 jar 的 ff() 一致），123 云盘免登直链。
+
+JSON 线路写法（配置里只挂这一条聚合线路即可）：
+{
+  "key": "网盘聚合",
+  "name": "网盘",
+  "type": 3,
+  "api": "./py/网盘聚合.py",
+  "searchable": 1,
+  "quickSearch": 1,
+  "filterable": 1,
+  "changeable": 1,
+  "ext": {
+    "mode": "",
+    "uc_cookie": "",
+    "quark_cookie": "",
+    "夸父cookie": "bbs_sid=xxx; bbs_token=xxx",
+    "123cookie": "bbs_sid=xxx; bbs_token=xxx",
+    "fast": "1",
+    "accel": "1",
+    "accel_thread": "96"
+  }
+}
+说明：
+- mode："" = 聚合模式；"uc" = UC免登专站；"quark" = 夸克免登专站；
+  "uc,quark"（也认 "uc+quark" / "uc quark" / "pan"）= UC+夸克双模式专站。
+  双模式验证语义为"或"：UC 或夸克任一能播即保留。
+- uc_cookie / quark_cookie 是 UC/夸克【网盘】的 cookie（免登链路可不填）；
+  夸父cookie / 123cookie 是夸父、123 两个【论坛站】的登录 cookie，与夸克网盘无关。
+- fast：仅聚合模式"仅UC免登/仅夸克免登"筛选用，1=只查有无链接（快），0=逐条试播（准但慢）。
+- accel：夸克游客直链被限速时走本地并发代理（1 开 0 关）；accel_thread 并发数（1-128，默认 96）。
+- UC 无限免登 = jar 的 ff() 链路（pc-api/file/download 匿名直链）。
+- 123 云盘分享直链免登可用。
+"""
 
 import sys
 import os
@@ -51,6 +86,9 @@ VIDEO_EXT = ('.mp4', '.mkv', '.ts', '.iso', '.rmvb', '.avi', '.mov', '.mpeg', '.
              '.wmv', '.3gp', '.asf', '.m4v', '.flv', '.vob', '.strm', '.tp', '.f4v',
              '.webm', '.m2ts', '.ogv')
 
+# ---------------------------------------------------------------------------
+# 网盘链接正则（详情页通用提取）
+# ---------------------------------------------------------------------------
 PAN_RES = [
     ("UC",   re.compile(r"https?://drive\.uc\.cn/s/[0-9a-zA-Z]+(?:\?pwd=\w+)?")),
     ("夸克",  re.compile(r"https?://pan\.quark\.cn/s/[0-9a-zA-Z]+(?:\?pwd=\w+)?")),
@@ -78,7 +116,7 @@ def make_session(ua=MOBILE_UA):
 
 
 def _ensure_url(site):
-
+    """懒探测镜像：首次用到该站时才 HEAD 探测（3s 超时），加载期零网络"""
     if site.get("_url_ok"):
         return
     ok = False
@@ -92,7 +130,7 @@ def _ensure_url(site):
             continue
     site["_url_ok"] = True
     if not ok:
-
+        # 全部镜像都连不上：熔断 5 分钟，之后每次加载/搜索直接跳过不再白等
         site["_dead_until"] = time.time() + 300
 
 
@@ -102,6 +140,11 @@ def http_get(session, url, timeout=8, headers=None, binary=False):
     return r.content if binary else r.text
 
 
+
+
+# ---------------------------------------------------------------------------
+# UC 网盘解析（共用一份，来自原 网盘搜索.py）
+# ---------------------------------------------------------------------------
 class UCDrive:
     PC_API = "https://pc-api.uc.cn/1/clouddrive"
     OPEN_API = "https://open-api-drive.uc.cn"
@@ -112,6 +155,7 @@ class UCDrive:
         self._stoken_cache = {}
         self._machine_code = None
 
+    # ---------- 公共 ----------
     def _headers_common(self):
         return {"Referer": "https://drive.uc.cn", "Cookie": self.cookie or "", "User-Agent": PC_UA}
 
@@ -189,9 +233,9 @@ class UCDrive:
                 break
             page += 1
 
-
+    # ---------- 播放链 1：匿名直链（无限） ----------
     def download_url_anon(self, pwd_id, fid, fid_token):
-
+        """就是 jar 的 ff()：匿名免登拿 download_url，失败返回空串"""
         try:
             stoken = self._get_stoken(pwd_id) or ""
         except Exception:
@@ -207,7 +251,7 @@ class UCDrive:
         return arr[0].get("download_url", "") or ""
 
     def play_anonymous(self, pwd_id, fid, fid_token):
-"
+        """jar 的 q() 无限分支：裸直链 + f() 头，关键是 Referer = download_url + '\\'（CDN 回调鉴权认它）"""
         dl = self.download_url_anon(pwd_id, fid, fid_token)
         if not dl:
             return {"parse": 0, "url": "", "header": self._headers_anon()}
@@ -215,7 +259,8 @@ class UCDrive:
                 "header": {"User-Agent": PC_UA, "Accept-Encoding": "identity", "Referer": dl + "\\"}}
 
     def stream_alive(self, dl, timeout=6):
-
+        """探测 CDN 直链是否真能流出字节（Range 0-0 头探测，与播放同请求头）。
+        脚本就跑在播放设备上：这里连不上/被拒，播放器一样缓冲死 → 判不可播"""
         if not dl:
             return False
         try:
@@ -229,10 +274,21 @@ class UCDrive:
             return False
 
 
+# ---------------------------------------------------------------------------
+# 夸克网盘解析（免登直链）
+#
+# 与 UC 完全对称的一套机制：分享未过期 → 匿名展开出视频 → 匿名直链可取 → CDN 头探测可连
+# ★ 关键突破：游客下载 50MiB 限制只挂在 pr=ucpro 这一条通道上，
+#   同一个 file/download 端点换成 pr=pc（mobile/web 同理）就放行，
+#   20GB 的大文件照样出直链（官网自己的 JS 遇到 23018 也只是弹"下载文件过大"）。
+# ★ 夸克 CDN 认的是【会话 cookie】（服务端在匿名流程 token→detail→download 里陆续下发
+#   __sdid / __pugs），所以这里全程用一个常驻 Session 串起来，播放时把 cookie 一起给播放器。
+#   （UC 那边靠 Referer=直链+"\\" 过 CDN 鉴权，夸克这边靠 cookie，两边机制不同。）
+# ---------------------------------------------------------------------------
 class QuarkDrive:
     PC_API = "https://drive-pc.quark.cn/1/clouddrive"
     SHARE_RE = re.compile(r"https?://pan\.quark\.cn/s/([0-9a-zA-Z]+)(?:\?pwd=(\w+))?")
-
+    # 免登直链用 pr=pc（ucpro 会被按游客限制卡 50MiB）
     DL_PR = "pc"
 
     def __init__(self, cookie=""):
@@ -241,6 +297,7 @@ class QuarkDrive:
         self.session.headers.update({"User-Agent": PC_UA})
         self._stoken_cache = {}
 
+    # ---------- 公共 ----------
     def _headers(self):
         h = {"Referer": "https://pan.quark.cn", "User-Agent": PC_UA}
         if self.cookie:
@@ -248,7 +305,7 @@ class QuarkDrive:
         return h
 
     def cookie_header(self):
-
+        """当前会话里的 cookie（CDN 拉流必须带）——兼容 CookieJar 与 dict 两种形态"""
         parts = []
         ck = getattr(self.session, "cookies", None)
         try:
@@ -271,7 +328,7 @@ class QuarkDrive:
         resp.encoding = "utf-8"
         return resp.text
 
-
+    # ---------- 匿名：分享 token / 列目录 ----------
     def share_token(self, pwd_id, passcode=""):
         url = f"{self.PC_API}/share/sharepage/token?__t={int(time.time() * 1000)}"
         body = {"pwd_id": pwd_id, "passcode": passcode or ""}
@@ -340,9 +397,10 @@ class QuarkDrive:
                 break
             page += 1
 
-
+    # ---------- 播放链：匿名直链（免登） ----------
     def _warm_session(self, pwd_id, stoken):
-
+        """匿名会话要 __sdid + __pugs 两个 cookie 才认 file/download；
+        没列过目录时先列一次把会话跑热（否则 download 返回空）"""
         names = set()
         ck = getattr(self.session, "cookies", None)
         try:
@@ -360,7 +418,7 @@ class QuarkDrive:
             pass
 
     def download_info(self, pwd_id, fid, fid_token):
-
+        """匿名免登拿直链信息：{"url","size","name"}（pr=pc 绕开 50MiB 游客限制）"""
         try:
             stoken = self._get_stoken(pwd_id) or ""
         except Exception:
@@ -382,11 +440,11 @@ class QuarkDrive:
                 "name": it.get("file_name", "")}
 
     def download_url_anon(self, pwd_id, fid, fid_token):
-
+        """匿名免登拿 download_url（pr=pc 绕开 50MiB 游客限制）"""
         return self.download_info(pwd_id, fid, fid_token).get("url", "") or ""
 
     def play_anonymous(self, pwd_id, fid, fid_token):
-
+        """裸直链 + 会话 cookie（夸克 CDN 认 cookie；不带会被 412）"""
         dl = self.download_url_anon(pwd_id, fid, fid_token)
         if not dl:
             return {"parse": 0, "url": "", "header": self._headers()}
@@ -397,7 +455,7 @@ class QuarkDrive:
         return {"parse": 0, "url": dl, "header": h}
 
     def stream_alive(self, dl, timeout=6):
- 
+        """探测 CDN 直链是否真能流出字节（Range 0-0 头探测，与播放同请求头）"""
         if not dl:
             return False
         h = {"User-Agent": PC_UA, "Accept-Encoding": "identity",
@@ -409,7 +467,7 @@ class QuarkDrive:
             try:
                 r = self.session.get(dl, headers=h, stream=True, timeout=timeout)
             except TypeError:
-
+                # 环境不支持 stream 参数时退回普通 GET（只看状态码）
                 r = self.session.get(dl, headers=h, timeout=timeout)
             ok = r.status_code in (200, 206)
             try:
@@ -421,7 +479,20 @@ class QuarkDrive:
             return False
 
 
-
+# ---------------------------------------------------------------------------
+# 本地并发流代理（夸克游客直链"单连接限速"的正解）
+#
+# ★ 实测依据（2026-11-10，同机同网络、同一沙箱出口）：
+#   - 对照：阿里 OSS 公网文件 8.0MB/s、华为镜像 9.0MB/s、腾讯镜像 9.4MB/s
+#   - 夸克直链单连接恒定 0.10MB/s（≈800Kbps），换 UA / 换 host / 改 sp / 免 Range 全都一样
+#   - 夸克 1/4/8/16 并发 => 0.10 / 0.38 / 0.76 / 1.49 MB/s（线性叠加）
+#   ⇒ 结论：夸克是【单连接】限速（游客非会员策略），多连接即可绕过；
+#     这和"UC 那种速度"的差距不在网络，而在 UC 给的是转码流、夸克只给原片。
+# ★ 架构对齐 jar 的本地服务：jar 也有 ?do=ali&type=video&site=quark&...&thread=%d&chunksize=%d&url=%s
+# ★ 播放器访问 http://127.0.0.1:<port>/s/<sid>，代理用 N 条独立连接并发拉同一段、按序喂给播放器，
+#   支持 Range / Content-Range（ExoPlayer 会带 Range）。
+# ★ 任何一步失败都回退裸直链；ext.accel=0 可整体关闭。
+# ---------------------------------------------------------------------------
 class LocalStreamProxy:
     _inst = None
 
@@ -536,7 +607,8 @@ class LocalStreamProxy:
 
     # ---------- 上游拉流 ----------
     def _maybe_refresh(self, it):
-
+        """直链/cookie 失效时调用 refresh 回调换新的。并发拉块线程共用一把锁：
+        一个线程刷新期间其余线程等它刷完直接用新链，避免 96 个线程同时回源刷新"""
         if not it.get("refresh"):
             return False
         lock = it.setdefault("_rlock", threading.Lock())
@@ -555,7 +627,10 @@ class LocalStreamProxy:
             return False
 
     def _fetch_block(self, sess, it, start, end):
-
+        """用【长连接】按 Range 拉一块（夸克限速是每连接 0.1MB/s，长连接可连续取块）。
+        必须恰好取满 want 字节：短读/断流直接写出去会让后续块全部错位损坏；
+        多写又会超过响应 Content-Length、污染 keep-alive 上的下一个响应——不够就重拉。
+        ★ 403/410/412 = 匿名会话 cookie 过期：先刷新直链再试，别把错误页当数据写出去"""
         sh = int(it.get("shift") or 0)      # PNG 伪装头：上游取流整体右移 sh 字节
         want = end - start + 1
         for attempt in range(3):
@@ -590,7 +665,11 @@ class LocalStreamProxy:
         return b""
 
     def _sniff(self, it):
-
+        """拉文件头 512 字节嗅探【真实】格式，结果缓存进 item。
+        ★ 分享文件扩展名完全不可信（实测一个 29 集分享里同时存在：
+          .mkv→MP4、.mp4/.mp3→MKV，以及 PNG 伪装头+MP4 和 PNG 伪装头+MKV 两种防和谐文件）；
+          伪装头不剥掉，播放器按错位字节解封装，51 分钟的视频只显示 15 秒。
+        产出 it["shift"]（上游取流右移字节数）和 it["ctype"]（真实 Content-Type）"""
         if "_sniffed" in it:
             return
         it["_sniffed"] = True
@@ -603,7 +682,8 @@ class LocalStreamProxy:
 
     @staticmethod
     def _sniff_head(head, url):
-
+        """在文件头前 48 字节内定位真实容器签名（伪装头会顶掉 offset 0），
+        返回 (shift, ctype)：shift = 伪装头长度；靠前出现的签名优先"""
         shift, ctype = 0, ""
         if head:
             i = head.find(b"\x1a\x45\xdf\xa3", 0, 48)          # EBML → MKV
@@ -627,14 +707,14 @@ class LocalStreamProxy:
 
     @staticmethod
     def _ext_mime(url):
-
+        """扩展名兜底（仅在 magic 嗅不出来时用）"""
         ext = os.path.splitext((url or "").split("?")[0].lower())[1]
         return {".mp4": "video/mp4", ".mkv": "video/x-matroska", ".flv": "video/x-flv",
                 ".ts": "video/mp2t", ".m3u8": "application/vnd.apple.mpegurl",
                 ".avi": "video/x-msvideo", ".mov": "video/quicktime"}.get(ext, "video/mp4")
 
     def _fetch_range(self, it, start, end):
-
+        """单连接拉一段（探测用）"""
         sess = requests.Session()
         try:
             sess.trust_env = False
@@ -649,7 +729,10 @@ class LocalStreamProxy:
                 pass
 
     def _pump(self, it, wfile, start, end):
-
+        """把 [start,end] 切成等长小块，W 条【长连接】按"轮转"各自连续取块，
+        写端按块序输出 ⇒ W 条连接同时在拉，聚合带宽 ≈ W × 0.1MB/s。
+        ★ 关键：不能用"先取完第 1 段再取第 2 段"，那样只有一条连接在干活；
+          轮转 + 有序写才能把并发真正叠起来（实测 64 连接 ≈ 5.4MB/s）。"""
         total = end - start + 1
         W = max(1, min(int(self.thread or 64), 128))
         B = max(32768, int(self.block or 65536))
@@ -768,6 +851,9 @@ class LocalStreamProxy:
                 pass
 
 
+# ---------------------------------------------------------------------------
+# 123 云盘解析（免登直链，来自 jar merge/b/m.java 移植）
+# ---------------------------------------------------------------------------
 class Pan123:
     SHARE_RE = re.compile(r"https?://(?:www\.)?(?:123pan|123684|123865|123912|123592)\.(?:com|cn)/s/([\w\-]+)")
 
@@ -789,7 +875,7 @@ class Pan123:
         return key, pwd
 
     def list_videos(self, share_url):
-
+        """递归拿分享内视频：返回 [{'file_id','file_name','size','etag','s3key','download_url'}]"""
         key, pwd = self._parse(share_url)
         if not key:
             return []
@@ -839,7 +925,9 @@ class Pan123:
                            "platform": "android", "user-agent": DART_UA, "app-version": "3"}}
 
 
-
+# ---------------------------------------------------------------------------
+# 站点配置（18 站，镜像来自 jar 配置）
+# ---------------------------------------------------------------------------
 SITES = [
     {"id": "木偶",  "name": "木偶", "type": "webshare",
      "site": ["https://123.666291.xyz", "https://666.666291.xyz",
@@ -926,6 +1014,9 @@ FILTERS_WOGG = {
 }
 
 
+# ---------------------------------------------------------------------------
+# 各站点适配器（输入 site 配置 + session，输出统一结构）
+# ---------------------------------------------------------------------------
 def _abs(base, href):
     if not href:
         return ""
@@ -968,6 +1059,7 @@ def maccms_categories(site):
     return FILTERS_WEBSHARE["cateId"]
 
 
+# 标准分类 id → 名称别名（用于匹配各站导航里的真实分类名）
 CAT_ALIASES = {
     "1":  ("电影", "影片"),
     "2":  ("剧集", "电视剧", "连续剧"),
@@ -980,7 +1072,9 @@ _CAT_SKIP_PREFIX = ("更多", "全部", "查看", "首页")
 
 
 def webshare_type_map(site):
-
+    """懒探测 webshare 站真实分类表 {标准cateId: 真实id}。
+    各苹果CMS站分类 id 是后台自配的，全不一样（如木偶 综艺=29/短剧无，多多 短剧=5/纪录=20）。
+    返回 None=探测失败（退回静态表）；dict=探测成功（缺的标准分类=该站没有）。"""
     if "_typemap" in site:
         return site["_typemap"]
     tmap = None
@@ -1022,7 +1116,7 @@ def webshare_type_map(site):
                         tmap.setdefault(std, rid)
                         break
             if not tmap:
-
+                # 分类名被混淆（虎斑的风花雪月 / 快映的梅兰竹菊）：按惯例 1/2/3/4=电影/剧集/综艺/动漫
                 ids = {rid for rid, _ in clean}
                 if {"1", "2", "3", "4"} <= ids:
                     tmap = {"1": "1", "2": "2", "3": "3", "4": "4"}
@@ -1033,7 +1127,7 @@ def webshare_type_map(site):
 
 
 def resolve_webshare_cat(site, std_id):
-
+    """标准分类 id → 该站真实 id；None 表示该站无此分类（宁缺毋错，不再错显）"""
     tmap = webshare_type_map(site)
     if tmap is None:
         return str(std_id)  # 探测失败，退回旧行为
